@@ -1,0 +1,12 @@
+# Python
+__pycache__/
+*.py[cod]
+.env
+venv/
+.venv/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Data files are committed intentionally — do NOT ignore data/*.json
