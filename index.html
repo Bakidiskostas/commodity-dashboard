@@ -6,15 +6,24 @@
 <title>Commodity Dashboard — Einkaufscontrolling</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.32.0/plotly.min.js"></script>
 <style>
-:root{--bg:#0d1117;--sur:#161b22;--sur2:#1c2330;--bor:#30363d;--txt:#e6edf3;--mut:#8b949e;--acc:#d4a843;--acc2:#3b7fd4;--r:6px;--font:'Inter','Segoe UI',system-ui,sans-serif;--mono:'JetBrains Mono',monospace}
+:root{--bg:#0d1117;--sur:#161b22;--sur2:#1c2330;--bor:#30363d;--txt:#e6edf3;--mut:#8b949e;--acc:#d4a843;--acc2:#3b7fd4;--r:6px;--font:'Inter','Segoe UI',system-ui,sans-serif;--mono:'JetBrains Mono',monospace;--sidebar:200px}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--txt);font-family:var(--font);font-size:13px;height:100vh;display:flex;flex-direction:column;overflow:hidden}
-header{padding:10px 18px;border-bottom:1px solid var(--bor);display:flex;align-items:center;gap:10px;flex-shrink:0}
+
+/* Header */
+header{padding:10px 18px;border-bottom:1px solid var(--bor);display:flex;align-items:center;gap:10px;flex-shrink:0;z-index:100}
 .logo{font-size:15px;font-weight:700;color:var(--acc);letter-spacing:-.3px}
 .logo span{color:var(--mut);font-weight:400;font-size:11px;margin-left:6px}
 #lu{margin-left:auto;font-size:10px;color:var(--mut);font-family:var(--mono)}
-.shell{display:flex;flex:1;min-height:0}
-aside{width:200px;flex-shrink:0;background:var(--sur);border-right:1px solid var(--bor);overflow-y:auto;padding:8px 6px;display:flex;flex-direction:column;gap:12px}
+
+/* Hamburger — only on mobile */
+.hamburger{display:none;background:transparent;border:1px solid var(--bor);border-radius:var(--r);padding:5px 8px;cursor:pointer;color:var(--mut);font-size:16px;line-height:1;flex-shrink:0}
+
+/* Shell */
+.shell{display:flex;flex:1;min-height:0;position:relative}
+
+/* Sidebar */
+aside{width:var(--sidebar);flex-shrink:0;background:var(--sur);border-right:1px solid var(--bor);overflow-y:auto;padding:8px 6px;display:flex;flex-direction:column;gap:12px;transition:transform .25s ease}
 .sb-act{display:flex;gap:4px}
 .btn{font-size:10px;padding:3px 8px;border-radius:var(--r);border:1px solid var(--bor);background:transparent;color:var(--mut);cursor:pointer;transition:all .12s}
 .btn:hover{border-color:var(--acc);color:var(--acc)}
@@ -27,6 +36,12 @@ aside{width:200px;flex-shrink:0;background:var(--sur);border-right:1px solid var
 .bar-tag{font-size:8px;color:var(--acc2);background:rgba(59,127,212,.15);border:1px solid rgba(59,127,212,.3);padding:0 4px;border-radius:3px;flex-shrink:0}
 .si.off .sl{color:var(--mut)}
 .si.off .sw{opacity:.2}
+
+/* Overlay when sidebar open on mobile */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:49}
+.overlay.vis{display:block}
+
+/* Main */
 main{flex:1;min-width:0;display:flex;flex-direction:column}
 .ctrl{display:flex;align-items:center;gap:7px;padding:7px 14px;border-bottom:1px solid var(--bor);flex-shrink:0;flex-wrap:wrap}
 .cl{font-size:10px;color:var(--mut)}
@@ -41,32 +56,60 @@ main{flex:1;min-width:0;display:flex;flex-direction:column}
 input:checked+.tsl{background:var(--acc2)}
 input:checked+.tsl::before{transform:translateX(15px);background:#fff}
 
-/* bar category filter */
 .bctrl{display:flex;align-items:center;gap:5px;padding:4px 14px;border-bottom:1px solid var(--bor);flex-shrink:0;flex-wrap:wrap;background:var(--sur)}
 .bctrl .lbl{font-size:9px;color:var(--mut);text-transform:uppercase;letter-spacing:.06em}
 .bb{font-size:9px;padding:2px 7px;border-radius:var(--r);border:1px solid var(--bor);background:transparent;color:var(--mut);cursor:pointer;transition:all .12s}
 .bb:hover,.bb.active{border-color:var(--acc2);color:var(--acc2);background:rgba(59,127,212,.1)}
 
-/* Single combined chart container */
 #chart-wrap{flex:1;min-height:0}
-
 .ov{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:10px;color:var(--mut);font-size:12px;text-align:center}
 .ov .ic{font-size:26px}
 .ov code{font-family:var(--mono);font-size:10px;background:var(--sur2);padding:5px 10px;border-radius:var(--r);border:1px solid var(--bor);color:var(--acc)}
+
 ::-webkit-scrollbar{width:4px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
+
+/* ── Mobile ── */
+@media(max-width:768px){
+  :root{--sidebar:220px}
+
+  .hamburger{display:block}
+  #lu{font-size:9px}
+  .logo span{display:none}
+
+  aside{
+    position:fixed;
+    top:0;left:0;bottom:0;
+    z-index:50;
+    transform:translateX(-100%);
+    width:var(--sidebar);
+    padding-top:54px; /* header height */
+  }
+  aside.open{transform:translateX(0)}
+
+  .ctrl{padding:5px 8px;gap:5px}
+  .rb{padding:4px 8px;font-size:11px}
+  .nl{display:none}
+  .tgl{margin-left:auto}
+
+  .bctrl{padding:4px 8px;gap:4px}
+  .bb{padding:3px 7px;font-size:10px}
+}
 </style>
 </head>
 <body>
 
 <header>
+  <button class="hamburger" id="hbg" aria-label="Menu">☰</button>
   <div class="logo">Commodity Dashboard <span>Einkaufscontrolling</span></div>
   <div id="lu">—</div>
 </header>
 
+<div class="overlay" id="overlay"></div>
+
 <div class="shell">
-  <aside>
+  <aside id="sidebar">
     <div class="sb-act">
       <button class="btn" onclick="toggleAll(true)">All ON</button>
       <button class="btn" onclick="toggleAll(false)">All OFF</button>
@@ -89,9 +132,9 @@ input:checked+.tsl::before{transform:translateX(15px);background:#fff}
     </div>
 
     <div class="bctrl">
-      <span class="lbl">Macro bars:</span>
+      <span class="lbl">Macro:</span>
       <button class="bb active" data-bc="all">All</button>
-      <button class="bb" data-bc="Interest Rates">Interest Rates</button>
+      <button class="bb" data-bc="Interest Rates">Rates</button>
       <button class="bb" data-bc="GDP">GDP</button>
       <button class="bb" data-bc="Inflation">Inflation</button>
       <button class="bb" data-bc="PMI">PMI</button>
@@ -106,7 +149,25 @@ input:checked+.tsl::before{transform:translateX(15px);background:#fff}
 <script>
 const PAL=['#d4a843','#3b7fd4','#3fb950','#e05c5c','#a371f7','#f0883e','#56d3c8','#ff7eb6','#7ee787','#79c0ff','#ffa657','#d2a8ff','#ff9492','#86efac','#b3d4f5','#ffe680','#98d8c8','#f9a8d4','#c4b5fd','#6e7681','#c9d1d9','#58a6ff'];
 let all=[], activeY=10, norm=false, barCat='all', ci=0;
-let hasBar=false; // tracks if bar subplot is visible
+
+// ── Hamburger ────────────────────────────────────────────────────────────────
+const sidebar=document.getElementById('sidebar');
+const overlay=document.getElementById('overlay');
+document.getElementById('hbg').addEventListener('click',()=>{
+  sidebar.classList.toggle('open');
+  overlay.classList.toggle('vis');
+});
+overlay.addEventListener('click',()=>{
+  sidebar.classList.remove('open');
+  overlay.classList.remove('vis');
+});
+// Close sidebar after series toggle on mobile
+function closeSidebarMobile(){
+  if(window.innerWidth<=768){
+    sidebar.classList.remove('open');
+    overlay.classList.remove('vis');
+  }
+}
 
 async function loadData(){
   try{
@@ -117,31 +178,34 @@ async function loadData(){
     document.getElementById('lu').textContent=ts;
     all=[];
     for(const s of cd.series)
-      all.push({...s, sidebarType:'commodity', color:PAL[ci++%PAL.length], active:s.default_on===true});
+      all.push({...s,sidebarType:'commodity',color:PAL[ci++%PAL.length],active:s.default_on===true});
     for(const s of id.series)
-      all.push({...s, sidebarType:'indicator', color:PAL[ci++%PAL.length], active:s.default_on===true});
+      all.push({...s,sidebarType:'indicator',color:PAL[ci++%PAL.length],active:s.default_on===true});
     buildSidebar();
     renderAll();
-  }catch(e){ showErr(); }
+  }catch(e){showErr();}
 }
 
 function buildSidebar(){
-  const cl=document.getElementById('clist'), il=document.getElementById('ilist');
-  cl.innerHTML=''; il.innerHTML='';
+  const cl=document.getElementById('clist'),il=document.getElementById('ilist');
+  cl.innerHTML='';il.innerHTML='';
   const g={};
-  for(const s of all){ const k=s.sidebarType+'::'+s.category; (g[k]??=[]).push(s); }
+  for(const s of all){const k=s.sidebarType+'::'+s.category;(g[k]??=[]).push(s);}
   for(const[k,items]of Object.entries(g)){
     const[sType,cat]=k.split('::');
     const t=sType==='commodity'?cl:il;
-    const ce=document.createElement('div'); ce.className='cat-lbl'; ce.textContent=cat; t.appendChild(ce);
+    const ce=document.createElement('div');ce.className='cat-lbl';ce.textContent=cat;t.appendChild(ce);
     for(const s of items){
       const el=document.createElement('div');
       const isBar=s.chart_type==='bar';
       el.className='si'+(s.active?'':' off');
       el.dataset.id=s.id;
       el.innerHTML=`<div class="sw" style="background:${s.color}"></div><span class="sl">${s.label}</span>${isBar?'<span class="bar-tag">BAR</span>':''}`;
-      el.title=isBar?'Shown in bar chart (bottom panel)':'Shown in line chart (top panel)';
-      el.addEventListener('click',()=>{ s.active=!s.active; el.classList.toggle('off',!s.active); renderAll(); });
+      el.addEventListener('click',()=>{
+        s.active=!s.active;
+        el.classList.toggle('off',!s.active);
+        renderAll();
+      });
       t.appendChild(el);
     }
   }
@@ -154,141 +218,97 @@ function toggleAll(on){
 }
 
 function filterY(data){
-  const cut=new Date(); cut.setFullYear(cut.getFullYear()-activeY);
+  const cut=new Date();cut.setFullYear(cut.getFullYear()-activeY);
   return data.filter(d=>new Date(d.date)>=cut);
 }
 function normalise(data){
-  if(!data.length) return data;
-  const b=data[0].value; if(!b) return data;
+  if(!data.length)return data;
+  const b=data[0].value;if(!b)return data;
   return data.map(d=>({...d,value:Math.round(d.value/b*10000)/100}));
 }
 
-function renderAll(){
-  const wrap=document.getElementById('chart-wrap');
-  const lines=all.filter(s=>s.active && s.chart_type!=='bar');
-  let bars=all.filter(s=>s.active && s.chart_type==='bar');
-  if(barCat!=='all') bars=bars.filter(s=>s.category===barCat);
-
-  if(!lines.length && !bars.length){
-    Plotly.purge('plt');
-    wrap.innerHTML=`<div class="ov"><div class="ic">📊</div><p>Select at least one series from the sidebar.</p></div>`;
-    return;
-  }
-
-  if(!document.getElementById('plt')){
-    wrap.innerHTML='<div id="plt" style="height:100%;width:100%;"></div>';
-  }
-
-  hasBar = bars.length > 0;
-
-  // Row heights: if bar chart exists → 65% line + 35% bar, else 100% line
-  const rowHeights = hasBar ? [0.65, 0.35] : [1];
-  const rowCount   = hasBar ? 2 : 1;
-
-  const traces = [];
-
-  // Line traces → subplot 1
-  for(const s of lines){
-    let d=filterY(s.data);
-    if(norm) d=normalise(d);
-    traces.push({
-      x:d.map(r=>r.date), y:d.map(r=>r.value),
-      name:s.label, type:'scatter', mode:'lines',
-      line:{color:s.color, width:1.5},
-      xaxis:'x', yaxis:'y',
-      hovertemplate:`<b>${s.label}</b><br>%{x}<br>%{y:.2f} ${norm?'(base=100)':s.unit}<extra></extra>`
-    });
-  }
-
-  // Bar traces → subplot 2 (shares x-axis with subplot 1)
-  for(const s of bars){
-    const d=filterY(s.data);
-    traces.push({
-      x:d.map(r=>r.date), y:d.map(r=>r.value),
-      name:s.label, type:'bar', opacity:0.85,
-      marker:{color:s.color},
-      xaxis:'x', yaxis:'y2',
-      hovertemplate:`<b>${s.label}</b><br>%{x}<br>%{y:.2f} ${s.unit}<extra></extra>`
-    });
-  }
-
-  const axisStyle={
-    gridcolor:'#21262d', linecolor:'#30363d',
-    zerolinecolor:'#30363d', tickcolor:'#30363d',
-    tickfont:{color:'#8b949e',size:10}
-  };
-
-  const layout={
-    paper_bgcolor:'#0d1117',
-    plot_bgcolor:'#0d1117',
+function baseLayout(extra={}){
+  return{
+    paper_bgcolor:'#0d1117',plot_bgcolor:'#0d1117',
     font:{family:'Inter,system-ui,sans-serif',color:'#8b949e',size:11},
+    xaxis:{gridcolor:'#21262d',linecolor:'#30363d',zerolinecolor:'#30363d',tickcolor:'#30363d'},
+    yaxis:{gridcolor:'#21262d',linecolor:'#30363d',zerolinecolor:'#30363d',tickcolor:'#30363d'},
+    legend:{bgcolor:'#161b22',bordercolor:'#30363d',borderwidth:1,font:{size:10}},
     hovermode:'x unified',
     hoverlabel:{bgcolor:'#1c2330',bordercolor:'#30363d',font:{size:11}},
-    barmode:'group',
-    legend:{bgcolor:'#161b22',bordercolor:'#30363d',borderwidth:1,font:{size:10},
-            orientation:'v', x:1.01, y:1, xanchor:'left'},
-    margin:{t:8, r:160, b:8, l:55},
-
-    // X axis — shared between both subplots
-    xaxis:{
-      ...axisStyle,
-      domain:[0,1],
-      // when bar chart visible, hide x labels on top chart
-      showticklabels: !hasBar,
-      anchor: hasBar ? 'y2' : 'y',
-    },
-
-    // Y axis line chart (top)
-    yaxis:{
-      ...axisStyle,
-      domain: hasBar ? [0.38, 1] : [0, 1],
-      title:{text: norm?'Index (base=100)':'Price', font:{size:10}, standoff:4},
-    },
+    margin:{t:8,r:18,b:38,l:52},
+    ...extra
   };
-
-  // Add bar y-axis only if needed
-  if(hasBar){
-    layout.yaxis2={
-      ...axisStyle,
-      domain:[0, 0.34],
-      title:{text:'Value', font:{size:10}, standoff:4},
-      anchor:'x',
-    };
-    layout.xaxis.showticklabels=false;
-    // Add a second x axis for the bottom subplot that shows labels
-    layout.xaxis2={
-      ...axisStyle,
-      domain:[0,1],
-      anchor:'y2',
-      overlaying:undefined,
-    };
-    // reassign bar traces to xaxis2
-    traces.forEach(t=>{ if(t.type==='bar'){ t.xaxis='x2'; t.yaxis='y2'; } });
-  }
-
-  const CFG={
-    responsive:true, displayModeBar:true,
-    modeBarButtonsToRemove:['select2d','lasso2d','autoScale2d'],
-    displaylogo:false,
-    toImageButtonOptions:{format:'png',filename:'commodity_dashboard',scale:2}
-  };
-
-  Plotly.react('plt', traces, layout, CFG);
 }
 
-// Period buttons
+const CFG={responsive:true,displayModeBar:true,modeBarButtonsToRemove:['select2d','lasso2d','autoScale2d'],displaylogo:false,toImageButtonOptions:{format:'png',filename:'commodity_dashboard',scale:2}};
+
+function renderAll(){renderMain();renderBar();}
+
+function renderMain(){
+  const con=document.getElementById('chart-wrap');
+  const lines=all.filter(s=>s.active&&s.chart_type!=='bar');
+  if(!lines.length){
+    Plotly.purge('pm');
+    con.innerHTML=`<div class="ov"><div class="ic">📊</div><p>Select at least one series from the sidebar.</p></div>`;
+    return;
+  }
+  if(!document.getElementById('pm')){con.innerHTML='<div id="pm" style="height:100%;width:100%"></div>';}
+  const traces=lines.map(s=>{
+    let d=filterY(s.data);
+    if(norm)d=normalise(d);
+    return{x:d.map(r=>r.date),y:d.map(r=>r.value),name:s.label,type:'scatter',mode:'lines',
+      line:{color:s.color,width:1.5},
+      hovertemplate:`<b>${s.label}</b><br>%{x}<br>%{y:.2f} ${norm?'(base=100)':s.unit}<extra></extra>`};
+  });
+  Plotly.react('pm',traces,baseLayout({
+    yaxis:{gridcolor:'#21262d',linecolor:'#30363d',zerolinecolor:'#30363d',tickcolor:'#30363d',
+      title:{text:norm?'Index (base=100)':'Price',font:{size:10}}}
+  }),CFG);
+}
+
+function renderBar(){
+  const bw=document.getElementById('chart-wrap');
+  let bars=all.filter(s=>s.active&&s.chart_type==='bar');
+  if(barCat!=='all')bars=bars.filter(s=>s.category===barCat);
+
+  // Remove old bar div if no bars
+  const oldBar=document.getElementById('bar-wrap');
+  if(!bars.length){if(oldBar)oldBar.remove();return;}
+
+  // Create bar wrap if needed
+  if(!oldBar){
+    const bwEl=document.createElement('div');
+    bwEl.id='bar-wrap';
+    bwEl.style.cssText='flex-shrink:0;height:32%;border-top:1px solid #30363d;';
+    bwEl.innerHTML='<div id="pb" style="height:100%;width:100%"></div>';
+    bw.parentElement.appendChild(bwEl);
+    // Shrink main chart
+    document.getElementById('chart-wrap').style.flex='1';
+  }
+
+  const traces=bars.map(s=>{
+    const d=filterY(s.data);
+    return{x:d.map(r=>r.date),y:d.map(r=>r.value),name:s.label,type:'bar',opacity:0.85,
+      marker:{color:s.color},
+      hovertemplate:`<b>${s.label}</b><br>%{x}<br>%{y:.2f} ${s.unit}<extra></extra>`};
+  });
+
+  Plotly.react('pb',traces,baseLayout({
+    barmode:'group',
+    margin:{t:4,r:18,b:36,l:50},
+    legend:{orientation:'h',bgcolor:'#161b22',bordercolor:'#30363d',borderwidth:1,font:{size:10},y:-0.35}
+  }),CFG);
+}
+
 document.querySelectorAll('.rb').forEach(b=>b.addEventListener('click',()=>{
   document.querySelectorAll('.rb').forEach(x=>x.classList.remove('active'));
-  b.classList.add('active'); activeY=parseInt(b.dataset.y); renderAll();
+  b.classList.add('active');activeY=parseInt(b.dataset.y);renderAll();
 }));
-
-// Normalize
-document.getElementById('nt').addEventListener('change',e=>{norm=e.target.checked; renderAll();});
-
-// Bar category filter
+document.getElementById('nt').addEventListener('change',e=>{norm=e.target.checked;renderAll();});
 document.querySelectorAll('.bb').forEach(b=>b.addEventListener('click',()=>{
   document.querySelectorAll('.bb').forEach(x=>x.classList.remove('active'));
-  b.classList.add('active'); barCat=b.dataset.bc; renderAll();
+  b.classList.add('active');barCat=b.dataset.bc;renderAll();
 }));
 
 function showErr(){
