@@ -6,24 +6,23 @@
 <title>Commodity Dashboard — Einkaufscontrolling</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.32.0/plotly.min.js"></script>
 <style>
-:root{--bg:#0d1117;--sur:#161b22;--sur2:#1c2330;--bor:#30363d;--txt:#e6edf3;--mut:#8b949e;--acc:#d4a843;--acc2:#3b7fd4;--r:6px;--font:'Inter','Segoe UI',system-ui,sans-serif;--mono:'JetBrains Mono',monospace;--sidebar:200px}
+:root{--bg:#0d1117;--sur:#161b22;--sur2:#1c2330;--bor:#30363d;--txt:#e6edf3;--mut:#8b949e;--acc:#d4a843;--acc2:#3b7fd4;--r:6px;--font:'Inter','Segoe UI',system-ui,sans-serif;--mono:'JetBrains Mono',monospace}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--txt);font-family:var(--font);font-size:13px;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--txt);font-family:var(--font);font-size:13px;display:flex;flex-direction:column}
 
 /* Header */
-header{padding:10px 18px;border-bottom:1px solid var(--bor);display:flex;align-items:center;gap:10px;flex-shrink:0;z-index:100}
+header{padding:10px 18px;border-bottom:1px solid var(--bor);display:flex;align-items:center;gap:10px;flex-shrink:0}
 .logo{font-size:15px;font-weight:700;color:var(--acc);letter-spacing:-.3px}
 .logo span{color:var(--mut);font-weight:400;font-size:11px;margin-left:6px}
 #lu{margin-left:auto;font-size:10px;color:var(--mut);font-family:var(--mono)}
-
-/* Hamburger — only on mobile */
-.hamburger{display:none;background:transparent;border:1px solid var(--bor);border-radius:var(--r);padding:5px 8px;cursor:pointer;color:var(--mut);font-size:16px;line-height:1;flex-shrink:0}
+.hamburger{display:none;background:transparent;border:1px solid var(--bor);border-radius:var(--r);padding:5px 9px;cursor:pointer;color:var(--mut);font-size:16px;line-height:1;flex-shrink:0}
 
 /* Shell */
-.shell{display:flex;flex:1;min-height:0;position:relative}
+.shell{display:flex;flex:1;min-height:0}
 
 /* Sidebar */
-aside{width:var(--sidebar);flex-shrink:0;background:var(--sur);border-right:1px solid var(--bor);overflow-y:auto;padding:8px 6px;display:flex;flex-direction:column;gap:12px;transition:transform .25s ease}
+aside{width:200px;flex-shrink:0;background:var(--sur);border-right:1px solid var(--bor);overflow-y:auto;padding:8px 6px;display:flex;flex-direction:column;gap:12px}
 .sb-act{display:flex;gap:4px}
 .btn{font-size:10px;padding:3px 8px;border-radius:var(--r);border:1px solid var(--bor);background:transparent;color:var(--mut);cursor:pointer;transition:all .12s}
 .btn:hover{border-color:var(--acc);color:var(--acc)}
@@ -37,12 +36,14 @@ aside{width:var(--sidebar);flex-shrink:0;background:var(--sur);border-right:1px 
 .si.off .sl{color:var(--mut)}
 .si.off .sw{opacity:.2}
 
-/* Overlay when sidebar open on mobile */
-.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:49}
+/* Overlay for mobile */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:49}
 .overlay.vis{display:block}
 
 /* Main */
-main{flex:1;min-width:0;display:flex;flex-direction:column}
+main{flex:1;min-width:0;display:flex;flex-direction:column;min-height:0}
+
+/* Controls row */
 .ctrl{display:flex;align-items:center;gap:7px;padding:7px 14px;border-bottom:1px solid var(--bor);flex-shrink:0;flex-wrap:wrap}
 .cl{font-size:10px;color:var(--mut)}
 .rb{font-size:10px;padding:3px 9px;border-radius:var(--r);border:1px solid var(--bor);background:transparent;color:var(--mut);cursor:pointer;transition:all .12s}
@@ -56,12 +57,24 @@ main{flex:1;min-width:0;display:flex;flex-direction:column}
 input:checked+.tsl{background:var(--acc2)}
 input:checked+.tsl::before{transform:translateX(15px);background:#fff}
 
+/* Bar filter row */
 .bctrl{display:flex;align-items:center;gap:5px;padding:4px 14px;border-bottom:1px solid var(--bor);flex-shrink:0;flex-wrap:wrap;background:var(--sur)}
 .bctrl .lbl{font-size:9px;color:var(--mut);text-transform:uppercase;letter-spacing:.06em}
 .bb{font-size:9px;padding:2px 7px;border-radius:var(--r);border:1px solid var(--bor);background:transparent;color:var(--mut);cursor:pointer;transition:all .12s}
 .bb:hover,.bb.active{border-color:var(--acc2);color:var(--acc2);background:rgba(59,127,212,.1)}
 
-#chart-wrap{flex:1;min-height:0}
+/* Charts container — fills remaining space */
+.charts{flex:1;min-height:0;display:flex;flex-direction:column}
+
+/* Line chart — top portion */
+#cm{flex:1;min-height:0}
+
+/* Bar chart — bottom portion, hidden by default */
+#bw{flex-shrink:0;height:33%;min-height:180px;border-top:1px solid var(--bor);display:none;flex-direction:column}
+#bw.vis{display:flex}
+#pb{flex:1;min-height:0}
+
+/* Overlay/loading */
 .ov{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:10px;color:var(--mut);font-size:12px;text-align:center}
 .ov .ic{font-size:26px}
 .ov code{font-family:var(--mono);font-size:10px;background:var(--sur2);padding:5px 10px;border-radius:var(--r);border:1px solid var(--bor);color:var(--acc)}
@@ -71,45 +84,56 @@ input:checked+.tsl::before{transform:translateX(15px);background:#fff}
 ::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
 
 /* ── Mobile ── */
-@media(max-width:768px){
-  :root{--sidebar:220px}
-
+@media(max-width:900px){
   .hamburger{display:block}
-  #lu{font-size:9px}
   .logo span{display:none}
+  #lu{font-size:9px}
+  header{padding:8px 12px}
 
   aside{
-    position:fixed;
-    top:0;left:0;bottom:0;
-    z-index:50;
+    position:fixed;top:0;left:0;bottom:0;
+    z-index:50;width:220px;
     transform:translateX(-100%);
-    width:var(--sidebar);
-    padding-top:54px; /* header height */
+    transition:transform .25s ease;
+    padding-top:50px;
   }
   aside.open{transform:translateX(0)}
 
   .ctrl{padding:5px 8px;gap:5px}
   .rb{padding:4px 8px;font-size:11px}
   .nl{display:none}
-  .tgl{margin-left:auto}
-
   .bctrl{padding:4px 8px;gap:4px}
   .bb{padding:3px 7px;font-size:10px}
+
+  /* Portrait: keep both charts visible */
+  @media(orientation:portrait){
+    #cm{max-height:52vh}
+    #bw{height:30vh!important;min-height:120px}
+  }
+
+  /* Landscape: more compact header */
+  @media(orientation:landscape){
+    header{padding:4px 12px}
+    .logo{font-size:13px}
+    .ctrl{padding:3px 8px}
+    .bctrl{padding:2px 8px}
+    #bw{height:38%!important}
+  }
 }
 </style>
 </head>
 <body>
 
 <header>
-  <button class="hamburger" id="hbg" aria-label="Menu">☰</button>
+  <button class="hamburger" id="hbg">☰</button>
   <div class="logo">Commodity Dashboard <span>Einkaufscontrolling</span></div>
   <div id="lu">—</div>
 </header>
 
-<div class="overlay" id="overlay"></div>
+<div class="overlay" id="ov"></div>
 
 <div class="shell">
-  <aside id="sidebar">
+  <aside id="sb">
     <div class="sb-act">
       <button class="btn" onclick="toggleAll(true)">All ON</button>
       <button class="btn" onclick="toggleAll(false)">All OFF</button>
@@ -140,8 +164,13 @@ input:checked+.tsl::before{transform:translateX(15px);background:#fff}
       <button class="bb" data-bc="PMI">PMI</button>
     </div>
 
-    <div id="chart-wrap">
-      <div class="ov" id="loading"><div class="ic">⏳</div><p>Loading data…</p></div>
+    <div class="charts">
+      <div id="cm">
+        <div class="ov" id="loading"><div class="ic">⏳</div><p>Loading data…</p></div>
+      </div>
+      <div id="bw">
+        <div id="pb"></div>
+      </div>
     </div>
   </main>
 </div>
@@ -150,39 +179,21 @@ input:checked+.tsl::before{transform:translateX(15px);background:#fff}
 const PAL=['#d4a843','#3b7fd4','#3fb950','#e05c5c','#a371f7','#f0883e','#56d3c8','#ff7eb6','#7ee787','#79c0ff','#ffa657','#d2a8ff','#ff9492','#86efac','#b3d4f5','#ffe680','#98d8c8','#f9a8d4','#c4b5fd','#6e7681','#c9d1d9','#58a6ff'];
 let all=[], activeY=10, norm=false, barCat='all', ci=0;
 
-// ── Hamburger ────────────────────────────────────────────────────────────────
-const sidebar=document.getElementById('sidebar');
-const overlay=document.getElementById('overlay');
-document.getElementById('hbg').addEventListener('click',()=>{
-  sidebar.classList.toggle('open');
-  overlay.classList.toggle('vis');
-});
-overlay.addEventListener('click',()=>{
-  sidebar.classList.remove('open');
-  overlay.classList.remove('vis');
-});
-// Close sidebar after series toggle on mobile
-function closeSidebarMobile(){
-  if(window.innerWidth<=768){
-    sidebar.classList.remove('open');
-    overlay.classList.remove('vis');
-  }
-}
+// Hamburger
+const sb=document.getElementById('sb'), ov=document.getElementById('ov');
+document.getElementById('hbg').addEventListener('click',()=>{sb.classList.toggle('open');ov.classList.toggle('vis');});
+ov.addEventListener('click',()=>{sb.classList.remove('open');ov.classList.remove('vis');});
 
 async function loadData(){
   try{
     const [cr,ir]=await Promise.all([fetch('./data/commodities.json'),fetch('./data/indicators.json')]);
     if(!cr.ok||!ir.ok) throw new Error();
     const [cd,id]=await Promise.all([cr.json(),ir.json()]);
-    const ts=cd.meta?.fetched_at?'Updated: '+new Date(cd.meta.fetched_at).toLocaleString('en-GB'):'';
-    document.getElementById('lu').textContent=ts;
+    document.getElementById('lu').textContent=cd.meta?.fetched_at?'Updated: '+new Date(cd.meta.fetched_at).toLocaleString('en-GB'):'';
     all=[];
-    for(const s of cd.series)
-      all.push({...s,sidebarType:'commodity',color:PAL[ci++%PAL.length],active:s.default_on===true});
-    for(const s of id.series)
-      all.push({...s,sidebarType:'indicator',color:PAL[ci++%PAL.length],active:s.default_on===true});
-    buildSidebar();
-    renderAll();
+    for(const s of cd.series) all.push({...s,sidebarType:'commodity',color:PAL[ci++%PAL.length],active:s.default_on===true});
+    for(const s of id.series) all.push({...s,sidebarType:'indicator',color:PAL[ci++%PAL.length],active:s.default_on===true});
+    buildSidebar(); renderAll();
   }catch(e){showErr();}
 }
 
@@ -197,126 +208,51 @@ function buildSidebar(){
     const ce=document.createElement('div');ce.className='cat-lbl';ce.textContent=cat;t.appendChild(ce);
     for(const s of items){
       const el=document.createElement('div');
-      const isBar=s.chart_type==='bar';
       el.className='si'+(s.active?'':' off');
-      el.dataset.id=s.id;
-      el.innerHTML=`<div class="sw" style="background:${s.color}"></div><span class="sl">${s.label}</span>${isBar?'<span class="bar-tag">BAR</span>':''}`;
-      el.addEventListener('click',()=>{
-        s.active=!s.active;
-        el.classList.toggle('off',!s.active);
-        renderAll();
-      });
+      el.innerHTML=`<div class="sw" style="background:${s.color}"></div><span class="sl">${s.label}</span>${s.chart_type==='bar'?'<span class="bar-tag">BAR</span>':''}`;
+      el.addEventListener('click',()=>{s.active=!s.active;el.classList.toggle('off',!s.active);renderAll();});
       t.appendChild(el);
     }
   }
 }
 
-function toggleAll(on){
-  all.forEach(s=>s.active=on);
-  document.querySelectorAll('.si').forEach(el=>el.classList.toggle('off',!on));
-  renderAll();
-}
+function toggleAll(on){all.forEach(s=>s.active=on);document.querySelectorAll('.si').forEach(el=>el.classList.toggle('off',!on));renderAll();}
 
-function filterY(data){
-  const cut=new Date();cut.setFullYear(cut.getFullYear()-activeY);
-  return data.filter(d=>new Date(d.date)>=cut);
-}
-function normalise(data){
-  if(!data.length)return data;
-  const b=data[0].value;if(!b)return data;
-  return data.map(d=>({...d,value:Math.round(d.value/b*10000)/100}));
-}
+function filterY(data){const cut=new Date();cut.setFullYear(cut.getFullYear()-activeY);return data.filter(d=>new Date(d.date)>=cut);}
+function normalise(data){if(!data.length)return data;const b=data[0].value;if(!b)return data;return data.map(d=>({...d,value:Math.round(d.value/b*10000)/100}));}
 
-function baseLayout(extra={}){
-  return{
-    paper_bgcolor:'#0d1117',plot_bgcolor:'#0d1117',
-    font:{family:'Inter,system-ui,sans-serif',color:'#8b949e',size:11},
-    xaxis:{gridcolor:'#21262d',linecolor:'#30363d',zerolinecolor:'#30363d',tickcolor:'#30363d'},
-    yaxis:{gridcolor:'#21262d',linecolor:'#30363d',zerolinecolor:'#30363d',tickcolor:'#30363d'},
-    legend:{bgcolor:'#161b22',bordercolor:'#30363d',borderwidth:1,font:{size:10}},
-    hovermode:'x unified',
-    hoverlabel:{bgcolor:'#1c2330',bordercolor:'#30363d',font:{size:11}},
-    margin:{t:8,r:18,b:38,l:52},
-    ...extra
-  };
-}
-
+function axStyle(){return{gridcolor:'#21262d',linecolor:'#30363d',zerolinecolor:'#30363d',tickcolor:'#30363d',tickfont:{color:'#8b949e',size:10}};}
 const CFG={responsive:true,displayModeBar:true,modeBarButtonsToRemove:['select2d','lasso2d','autoScale2d'],displaylogo:false,toImageButtonOptions:{format:'png',filename:'commodity_dashboard',scale:2}};
 
 function renderAll(){renderMain();renderBar();}
 
 function renderMain(){
-  const con=document.getElementById('chart-wrap');
+  const con=document.getElementById('cm');
   const lines=all.filter(s=>s.active&&s.chart_type!=='bar');
-  if(!lines.length){
-    Plotly.purge('pm');
-    con.innerHTML=`<div class="ov"><div class="ic">📊</div><p>Select at least one series from the sidebar.</p></div>`;
-    return;
-  }
+  if(!lines.length){Plotly.purge('pm');con.innerHTML=`<div class="ov"><div class="ic">📊</div><p>Select at least one series from the sidebar.</p></div>`;return;}
   if(!document.getElementById('pm')){con.innerHTML='<div id="pm" style="height:100%;width:100%"></div>';}
-  const traces=lines.map(s=>{
-    let d=filterY(s.data);
-    if(norm)d=normalise(d);
-    return{x:d.map(r=>r.date),y:d.map(r=>r.value),name:s.label,type:'scatter',mode:'lines',
-      line:{color:s.color,width:1.5},
-      hovertemplate:`<b>${s.label}</b><br>%{x}<br>%{y:.2f} ${norm?'(base=100)':s.unit}<extra></extra>`};
-  });
-  Plotly.react('pm',traces,baseLayout({
-    yaxis:{gridcolor:'#21262d',linecolor:'#30363d',zerolinecolor:'#30363d',tickcolor:'#30363d',
-      title:{text:norm?'Index (base=100)':'Price',font:{size:10}}}
-  }),CFG);
+  const traces=lines.map(s=>{let d=filterY(s.data);if(norm)d=normalise(d);return{x:d.map(r=>r.date),y:d.map(r=>r.value),name:s.label,type:'scatter',mode:'lines',line:{color:s.color,width:1.5},hovertemplate:`<b>${s.label}</b><br>%{x}<br>%{y:.2f} ${norm?'(base=100)':s.unit}<extra></extra>`};});
+  Plotly.react('pm',traces,{paper_bgcolor:'#0d1117',plot_bgcolor:'#0d1117',font:{family:'Inter,system-ui,sans-serif',color:'#8b949e',size:11},xaxis:axStyle(),yaxis:{...axStyle(),title:{text:norm?'Index (base=100)':'Price',font:{size:10}}},legend:{bgcolor:'#161b22',bordercolor:'#30363d',borderwidth:1,font:{size:10},orientation:'v'},hovermode:'x unified',hoverlabel:{bgcolor:'#1c2330',bordercolor:'#30363d',font:{size:11}},margin:{t:8,r:160,b:36,l:52}},CFG);
 }
 
 function renderBar(){
-  const bw=document.getElementById('chart-wrap');
+  const bw=document.getElementById('bw');
   let bars=all.filter(s=>s.active&&s.chart_type==='bar');
   if(barCat!=='all')bars=bars.filter(s=>s.category===barCat);
-
-  // Remove old bar div if no bars
-  const oldBar=document.getElementById('bar-wrap');
-  if(!bars.length){if(oldBar)oldBar.remove();return;}
-
-  // Create bar wrap if needed
-  if(!oldBar){
-    const bwEl=document.createElement('div');
-    bwEl.id='bar-wrap';
-    bwEl.style.cssText='flex-shrink:0;height:32%;border-top:1px solid #30363d;';
-    bwEl.innerHTML='<div id="pb" style="height:100%;width:100%"></div>';
-    bw.parentElement.appendChild(bwEl);
-    // Shrink main chart
-    document.getElementById('chart-wrap').style.flex='1';
-  }
-
-  const traces=bars.map(s=>{
-    const d=filterY(s.data);
-    return{x:d.map(r=>r.date),y:d.map(r=>r.value),name:s.label,type:'bar',opacity:0.85,
-      marker:{color:s.color},
-      hovertemplate:`<b>${s.label}</b><br>%{x}<br>%{y:.2f} ${s.unit}<extra></extra>`};
-  });
-
-  Plotly.react('pb',traces,baseLayout({
-    barmode:'group',
-    margin:{t:4,r:18,b:36,l:50},
-    legend:{orientation:'h',bgcolor:'#161b22',bordercolor:'#30363d',borderwidth:1,font:{size:10},y:-0.35}
-  }),CFG);
+  if(!bars.length){bw.classList.remove('vis');Plotly.purge('pb');return;}
+  bw.classList.add('vis');
+  const traces=bars.map(s=>{const d=filterY(s.data);return{x:d.map(r=>r.date),y:d.map(r=>r.value),name:s.label,type:'bar',opacity:0.85,marker:{color:s.color},hovertemplate:`<b>${s.label}</b><br>%{x}<br>%{y:.2f} ${s.unit}<extra></extra>`};});
+  Plotly.react('pb',traces,{paper_bgcolor:'#0d1117',plot_bgcolor:'#0d1117',font:{family:'Inter,system-ui,sans-serif',color:'#8b949e',size:11},xaxis:axStyle(),yaxis:{...axStyle(),title:{text:'%',font:{size:10}}},legend:{bgcolor:'#161b22',bordercolor:'#30363d',borderwidth:1,font:{size:10},orientation:'h',x:0,y:1.02,yanchor:'bottom'},barmode:'group',hovermode:'x unified',hoverlabel:{bgcolor:'#1c2330',bordercolor:'#30363d',font:{size:11}},margin:{t:30,r:20,b:36,l:52}},CFG);
 }
 
-document.querySelectorAll('.rb').forEach(b=>b.addEventListener('click',()=>{
-  document.querySelectorAll('.rb').forEach(x=>x.classList.remove('active'));
-  b.classList.add('active');activeY=parseInt(b.dataset.y);renderAll();
-}));
+document.querySelectorAll('.rb').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.rb').forEach(x=>x.classList.remove('active'));b.classList.add('active');activeY=parseInt(b.dataset.y);renderAll();}));
 document.getElementById('nt').addEventListener('change',e=>{norm=e.target.checked;renderAll();});
-document.querySelectorAll('.bb').forEach(b=>b.addEventListener('click',()=>{
-  document.querySelectorAll('.bb').forEach(x=>x.classList.remove('active'));
-  b.classList.add('active');barCat=b.dataset.bc;renderAll();
-}));
+document.querySelectorAll('.bb').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.bb').forEach(x=>x.classList.remove('active'));b.classList.add('active');barCat=b.dataset.bc;renderAll();}));
 
-function showErr(){
-  document.getElementById('chart-wrap').innerHTML=`
-    <div class="ov"><div class="ic">⚠️</div>
-    <p>Data files not found.<br>Run the Python script first:</p>
-    <code>python scripts/fetch_data.py</code></div>`;
-}
+let resizeTimer;
+window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{sb.classList.remove('open');ov.classList.remove('vis');renderAll();},200);});
+
+function showErr(){document.getElementById('cm').innerHTML=`<div class="ov"><div class="ic">⚠️</div><p>Data files not found.<br>Run the Python script first:</p><code>python scripts/fetch_data.py</code></div>`;}
 
 loadData();
 </script>
