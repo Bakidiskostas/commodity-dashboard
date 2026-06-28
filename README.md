@@ -80,7 +80,7 @@ python scripts/fetch_data.py
 
 1. Κάνε commit τα αρχεία (συμπεριλαμβανομένου του `data/` folder)
 2. Στο GitHub repo → Settings → Pages → Source: `main` branch, `/root`
-3. Το dashboard τρέχει στο `https://YOUR_USERNAME.github.io/commodity-dashboard/`
+3. Το dashboard τρέχει στο `https://bakidiskostas.github.io/commodity-dashboard/`
 
 > **Σημείωση**: Τα JSON αρχεία πρέπει να γίνουν commit μαζί με τον κώδικα.
 > Για αυτόματη ανανέωση, μπορείς να φτιάξεις GitHub Action που τρέχει
