@@ -63,16 +63,9 @@ input:checked+.tsl::before{transform:translateX(15px);background:#fff}
 .bb{font-size:9px;padding:2px 7px;border-radius:var(--r);border:1px solid var(--bor);background:transparent;color:var(--mut);cursor:pointer;transition:all .12s}
 .bb:hover,.bb.active{border-color:var(--acc2);color:var(--acc2);background:rgba(59,127,212,.1)}
 
-/* Charts container — fills remaining space */
-.charts{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;padding-bottom:8px}
-
-/* Line chart — takes 2/3 by flex-grow */
-#cm{flex:2;min-height:0}
-
-/* Bar chart — takes 1/3 by flex-grow, hidden by default */
-#bw{flex:1.1;min-height:0;border-top:1px solid var(--bor);display:none;flex-direction:column;padding-bottom:4px}
-#bw.vis{display:flex}
-#pb{flex:1;min-height:0;width:100%;height:100%}
+/* Single chart container — fills all remaining space */
+.charts{flex:1;min-height:0;display:flex;overflow:hidden}
+#plt{flex:1;min-height:0;min-width:0}
 
 /* Overlay/loading */
 .ov{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:10px;color:var(--mut);font-size:12px;text-align:center}
@@ -158,11 +151,8 @@ input:checked+.tsl::before{transform:translateX(15px);background:#fff}
     </div>
 
     <div class="charts">
-      <div id="cm">
+      <div id="plt" style="width:100%;height:100%">
         <div class="ov" id="loading"><div class="ic">⏳</div><p>Loading data…</p></div>
-      </div>
-      <div id="bw">
-        <div id="pb"></div>
       </div>
     </div>
   </main>
@@ -217,30 +207,77 @@ function normalise(data){if(!data.length)return data;const b=data[0].value;if(!b
 function axStyle(){return{gridcolor:'#21262d',linecolor:'#30363d',zerolinecolor:'#30363d',tickcolor:'#30363d',tickfont:{color:'#8b949e',size:10}};}
 const CFG={responsive:true,displayModeBar:true,modeBarButtonsToRemove:['select2d','lasso2d','autoScale2d'],displaylogo:false,toImageButtonOptions:{format:'png',filename:'commodity_dashboard',scale:2}};
 
-function renderAll(){renderMain();renderBar();}
-
-function renderMain(){
-  const con=document.getElementById('cm');
+function renderAll(){
+  const plt=document.getElementById('plt');
   const lines=all.filter(s=>s.active&&s.chart_type!=='bar');
-  if(!lines.length){Plotly.purge('pm');con.innerHTML=`<div class="ov"><div class="ic">📊</div><p>Select at least one series from the sidebar.</p></div>`;return;}
-  if(!document.getElementById('pm')){con.innerHTML='<div id="pm" style="height:100%;width:100%"></div>';}
-  const traces=lines.map(s=>{let d=filterY(s.data);if(norm)d=normalise(d);return{x:d.map(r=>r.date),y:d.map(r=>r.value),name:s.label,type:'scatter',mode:'lines',line:{color:s.color,width:1.5},hovertemplate:`<b>${s.label}</b><br>%{x}<br>%{y:.2f} ${norm?'(base=100)':s.unit}<extra></extra>`};});
-  const mob = window.innerWidth <= 900;
-  const mainLegend = mob
-    ? {bgcolor:'#161b22',bordercolor:'#30363d',borderwidth:1,font:{size:9},orientation:'h',x:0,y:1.02,yanchor:'bottom'}
-    : {bgcolor:'#161b22',bordercolor:'#30363d',borderwidth:1,font:{size:10},orientation:'v'};
-  const mainMargin = mob ? {t:28,r:14,b:30,l:46} : {t:8,r:160,b:36,l:52};
-  Plotly.react('pm',traces,{autosize:true,paper_bgcolor:'#0d1117',plot_bgcolor:'#0d1117',font:{family:'Inter,system-ui,sans-serif',color:'#8b949e',size:11},xaxis:axStyle(),yaxis:{...axStyle(),title:{text:norm?'Index (base=100)':'Price',font:{size:10}}},legend:mainLegend,hovermode:'x unified',hoverlabel:{bgcolor:'#1c2330',bordercolor:'#30363d',font:{size:11}},margin:mainMargin},CFG);
-}
-
-function renderBar(){
-  const bw=document.getElementById('bw');
   let bars=all.filter(s=>s.active&&s.chart_type==='bar');
   if(barCat!=='all')bars=bars.filter(s=>s.category===barCat);
-  if(!bars.length){bw.classList.remove('vis');Plotly.purge('pb');return;}
-  bw.classList.add('vis');
-  const traces=bars.map(s=>{const d=filterY(s.data);return{x:d.map(r=>r.date),y:d.map(r=>r.value),name:s.label,type:'bar',opacity:0.85,marker:{color:s.color},hovertemplate:`<b>${s.label}</b><br>%{x}<br>%{y:.2f} ${s.unit}<extra></extra>`};});
-  Plotly.react('pb',traces,{autosize:true,paper_bgcolor:'#0d1117',plot_bgcolor:'#0d1117',font:{family:'Inter,system-ui,sans-serif',color:'#8b949e',size:11},xaxis:axStyle(),yaxis:{...axStyle(),title:{text:'%',font:{size:10}}},legend:{bgcolor:'#161b22',bordercolor:'#30363d',borderwidth:1,font:{size:10},orientation:'h',x:0,y:1.02,yanchor:'bottom'},barmode:'group',hovermode:'x unified',hoverlabel:{bgcolor:'#1c2330',bordercolor:'#30363d',font:{size:11}},margin:{t:28,r:14,b:34,l:46}},CFG);
+
+  if(!lines.length&&!bars.length){
+    Plotly.purge('plt');
+    plt.innerHTML=`<div class="ov"><div class="ic">📊</div><p>Select at least one series from the sidebar.</p></div>`;
+    return;
+  }
+  // Clear any overlay leftover
+  if(plt.querySelector('.ov')) plt.innerHTML='';
+
+  const hasBar = bars.length>0;
+  const traces=[];
+
+  // Line traces → top subplot (y axis)
+  for(const s of lines){
+    let d=filterY(s.data);
+    if(norm)d=normalise(d);
+    traces.push({
+      x:d.map(r=>r.date), y:d.map(r=>r.value),
+      name:s.label, type:'scatter', mode:'lines',
+      xaxis:'x', yaxis:'y',
+      line:{color:s.color,width:1.5},
+      hovertemplate:`<b>${s.label}</b><br>%{x}<br>%{y:.2f} ${norm?'(base=100)':s.unit}<extra></extra>`
+    });
+  }
+  // Bar traces → bottom subplot (y2 axis)
+  for(const s of bars){
+    const d=filterY(s.data);
+    traces.push({
+      x:d.map(r=>r.date), y:d.map(r=>r.value),
+      name:s.label, type:'bar', opacity:0.85,
+      xaxis:'x', yaxis:'y2',
+      marker:{color:s.color},
+      hovertemplate:`<b>${s.label}</b><br>%{x}<br>%{y:.2f} ${s.unit}<extra></extra>`
+    });
+  }
+
+  const mob=window.innerWidth<=900;
+
+  const layout={
+    autosize:true,
+    paper_bgcolor:'#0d1117', plot_bgcolor:'#0d1117',
+    font:{family:'Inter,system-ui,sans-serif',color:'#8b949e',size:11},
+    hovermode:'x unified',
+    hoverlabel:{bgcolor:'#1c2330',bordercolor:'#30363d',font:{size:11}},
+    barmode:'group',
+    showlegend:true,
+    legend:{bgcolor:'#161b22',bordercolor:'#30363d',borderwidth:1,font:{size:10},
+            orientation:'h', x:0, y:1.04, yanchor:'bottom'},
+    margin:{t:34, r:16, b:34, l:52},
+
+    // Shared X axis (anchored to the bottom-most subplot)
+    xaxis:{...axStyle(), anchor: hasBar?'y2':'y'},
+
+    // Top subplot — line chart
+    yaxis:{...axStyle(),
+      domain: hasBar?[0.40,1]:[0,1],
+      title:{text: norm?'Index (base=100)':'Price', font:{size:10}}},
+  };
+
+  if(hasBar){
+    layout.yaxis2={...axStyle(),
+      domain:[0,0.30],
+      title:{text:'%', font:{size:10}}};
+  }
+
+  Plotly.react('plt', traces, layout, CFG);
 }
 
 document.querySelectorAll('.rb').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.rb').forEach(x=>x.classList.remove('active'));b.classList.add('active');activeY=parseInt(b.dataset.y);renderAll();}));
@@ -250,7 +287,7 @@ document.querySelectorAll('.bb').forEach(b=>b.addEventListener('click',()=>{docu
 let resizeTimer;
 window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{sb.classList.remove('open');ov.classList.remove('vis');renderAll();},200);});
 
-function showErr(){document.getElementById('cm').innerHTML=`<div class="ov"><div class="ic">⚠️</div><p>Data files not found.<br>Run the Python script first:</p><code>python scripts/fetch_data.py</code></div>`;}
+function showErr(){document.getElementById('plt').innerHTML=`<div class="ov"><div class="ic">⚠️</div><p>Data files not found.<br>Run the Python script first:</p><code>python scripts/fetch_data.py</code></div>`;}
 
 loadData();
 </script>
