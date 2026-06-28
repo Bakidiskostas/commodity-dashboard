@@ -17,28 +17,7 @@ Interactive dashboard για συσχέτιση τιμών μετάλλων κα
 - S&P 500, VIX
 - US 10Y Treasury Yield
 
----
 
-## Εγκατάσταση
-
-```bash
-# 1. Κλώνησε το repo
-git clone https://github.com/YOUR_USERNAME/commodity-dashboard.git
-cd commodity-dashboard
-
-# 2. Εγκατάσταση Python libraries
-pip install yfinance pandas requests
-
-# 3. Κατέβασε δεδομένα (δημιουργεί data/commodities.json & data/indicators.json)
-python scripts/fetch_data.py
-
-# 4. Άνοιξε το dashboard
-open index.html        # macOS
-start index.html       # Windows
-xdg-open index.html    # Linux
-```
-
----
 
 ## Χρήση
 
@@ -49,46 +28,14 @@ xdg-open index.html    # Linux
 - **Hover**: ενοποιημένο tooltip με όλες τις τιμές για μια ημερομηνία
 - **Zoom**: σύρε στο chart για zoom, διπλό κλικ για reset
 
----
 
-## Ανανέωση δεδομένων
-
-Τρέξε ξανά το script οποτεδήποτε:
-```bash
-python scripts/fetch_data.py
-```
-
----
-
-## Προσθήκη νέων Indicators
-
-Άνοιξε `scripts/fetch_data.py` και πρόσθεσε γραμμή στη λίστα `INDICATORS`:
-
-```python
-{"fred_id": "UNRATE", "label": "US Unemployment", "unit": "%", "category": "Macro"},
-```
-
-Βρες FRED series IDs στο: https://fred.stlouisfed.org/
-
-Για Trading Economics API (αν αποκτήσεις subscription):
-- Αντικατάστησε τη συνάρτηση `fetch_fred()` με κλήση στο TE API
-- Το HTML δεν χρειάζεται καμία αλλαγή
-
----
 
 ## GitHub Pages (δωρεάν hosting)
 
-1. Κάνε commit τα αρχεία (συμπεριλαμβανομένου του `data/` folder)
-2. Στο GitHub repo → Settings → Pages → Source: `main` branch, `/root`
-3. Το dashboard τρέχει στο `https://bakidiskostas.github.io/commodity-dashboard/`
+1. Το dashboard τρέχει στο https://bakidiskostas.github.io/commodity-dashboard/
 
-> **Σημείωση**: Τα JSON αρχεία πρέπει να γίνουν commit μαζί με τον κώδικα.
-> Για αυτόματη ανανέωση, μπορείς να φτιάξεις GitHub Action που τρέχει
-> το Python script εβδομαδιαία (βλ. παρακάτω).
 
----
-
-## GitHub Action για αυτόματη ανανέωση (προαιρετικό)
+## GitHub Action αυτόματη ανανέωση
 
 Δημιούργησε `.github/workflows/update-data.yml`:
 
