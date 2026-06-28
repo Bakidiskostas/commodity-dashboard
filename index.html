@@ -8,8 +8,8 @@
 <style>
 :root{--bg:#0d1117;--sur:#161b22;--sur2:#1c2330;--bor:#30363d;--txt:#e6edf3;--mut:#8b949e;--acc:#d4a843;--acc2:#3b7fd4;--r:6px;--font:'Inter','Segoe UI',system-ui,sans-serif;--mono:'JetBrains Mono',monospace}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100vh;max-height:100vh;overflow:hidden;margin:0}
-body{background:var(--bg);color:var(--txt);font-family:var(--font);font-size:13px;display:flex;flex-direction:column;height:100vh}
+html,body{height:100vh;height:100dvh;max-height:100dvh;overflow:hidden;margin:0}
+body{background:var(--bg);color:var(--txt);font-family:var(--font);font-size:13px;display:flex;flex-direction:column;height:100vh;height:100dvh}
 
 /* Header */
 header{padding:6px 18px;border-bottom:1px solid var(--bor);display:flex;align-items:center;gap:10px;flex-shrink:0}
@@ -260,7 +260,7 @@ function renderAll(){
     showlegend:true,
     legend:{bgcolor:'#161b22',bordercolor:'#30363d',borderwidth:1,font:{size:10},
             orientation:'h', x:0, y:1.04, yanchor:'bottom'},
-    margin:{t:34, r:16, b:34, l:52},
+    margin:{t:34, r:16, b:40, l:52},
 
     // Shared X axis (anchored to the bottom-most subplot)
     xaxis:{...axStyle(), anchor: hasBar?'y2':'y'},
@@ -272,8 +272,12 @@ function renderAll(){
   };
 
   if(hasBar){
+    // On mobile give the bar chart more vertical room
+    const lineTop = mob ? 0.46 : 0.40;
+    const barTop  = mob ? 0.34 : 0.30;
+    layout.yaxis.domain = [lineTop, 1];
     layout.yaxis2={...axStyle(),
-      domain:[0,0.30],
+      domain:[0, barTop],
       title:{text:'%', font:{size:10}}};
   }
 
