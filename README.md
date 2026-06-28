@@ -1,66 +1,84 @@
 # 📊 Commodity & Financial Indicators Dashboard
 
-Interactive dashboard για συσχέτιση τιμών μετάλλων και οικονομικών δεικτών —
-φτιαγμένο για Einkaufscontrolling.
+Interactive dashboard for correlating metal prices with macroeconomic indicators —
+built for Einkaufscontrolling (procurement controlling).
 
-## Τι περιλαμβάνει
+## What it includes
 
 **Commodities**
 - Precious Metals: Gold, Silver, Platinum, Palladium
 - Base Metals: Copper, Aluminum, Nickel, Zinc, Tin/Solder
 - Energy: Brent Oil, WTI Oil, Natural Gas
 
-**Financial Indicators** 
+**Financial Indicators**
 - USD Index (DXY), EUR/USD
-- Intererst rates FED and ECB
+- Interest Rates: Fed Funds Rate, ECB Main Refinancing Rate
 - US & EU CPI (Inflation)
 - S&P 500, VIX
 - US 10Y Treasury Yield
 - US & EU GDP Growth
-- US PMI
+- US Manufacturing PMI
 
-## Bar charts για τα επιτόκια
+## Data Sources
+- **Yahoo Finance** — commodity prices, equities, FX
+- **FRED (Federal Reserve Bank of St. Louis)** — macro indicators
+  (interest rates, inflation, GDP, PMI)
 
-Τα interest rates (Fed Funds, ECB) κινούνται τυπικά μεταξύ 1–5%. Σε line chart μαζί με τα normalized commodities (που φτάνουν 300–400) η γραμμή τους θα ήταν σχεδόν επίπεδη και η συσχέτιση θα χανόταν. Με **bar chart σε ξεχωριστό άξονα** αποτυπώνεται καθαρά η σχέση τιμών–επιτοκίων.
+Both sources provide reliable long-term historical data free of charge.
 
-## Διαχωρισμός charts
+## Design Decisions
 
-Τα γραφήματα είναι οργανωμένα ώστε να αναδεικνύεται η **σχέση τιμών με τους οικονομικούς δείκτες**, αντί να στοιβάζονται όλα μαζί.
+### Base = 100 Normalization
+All time series are normalized to a starting value of 100.
+Different assets trade at completely different price levels
+(e.g. Gold ~$2,000 vs Zinc ~$2.5), making direct comparison on a shared
+axis impossible. With base=100, the **relative change** is visible for all
+series simultaneously — making correlations clear regardless of unit or scale.
 
-## Ροή δεδομένων (Pipeline)
+### Bar Charts for Interest Rates
+Interest rates (Fed Funds, ECB) typically move between 1–5%.
+On a line chart alongside normalized commodities (which reach 300–400),
+the rate lines would appear nearly flat and any correlation would be lost.
+Using **bar charts on a separate axis** makes the relationship between
+commodity prices and rate cycles clearly visible.
 
-1. `fetch_data.py` → τραβάει τα δεδομένα και τα αποθηκεύει ως JSON στον φάκελο `data/`.
-2. `index.html` → διαβάζει τα JSON και παράγει τα interactive charts.
-3. `start.bat` → εκτελεί όλη τη ροή αυτόματα (ανανέωση βιβλιοθηκών, fetch δεδομένων, άνοιγμα dashboard στον browser).
-4. `update.bat` → ανανεώνει τα δεδομένα και ανοίγει το επικαιροποιημένο dashboard.
+### Chart Separation
+Charts are organized to highlight the **relationship between commodity prices
+and macroeconomic indicators**, rather than stacking everything into a single
+overcrowded visual.
 
-## Χρήση
+### Data Pipeline
+1. `fetch_data.py` → fetches data from Yahoo Finance & FRED,
+   saves as JSON in the `data/` folder
+2. `index.html` → reads the JSON files and renders interactive charts
+3. `start.bat` → runs the full pipeline automatically
+   (library update, data fetch, opens dashboard in browser)
+4. `update.bat` → refreshes data and opens the updated dashboard
 
-- **Sidebar**: κλικ σε κάθε γραμμή για ενεργοποίηση/απενεργοποίηση
-- **1Ε / 2Ε / 5Ε / 10Ε**: φιλτράρισμα χρονικής περιόδου
-- **Εξομαλυμένο (base=100)**: κανονικοποίηση όλων των σειρών στο 100
-  → ιδανικό για να βλέπεις συσχέτιση ανεξάρτητα από μονάδες
-- **Hover**: ενοποιημένο tooltip με όλες τις τιμές για μια ημερομηνία
-- **Zoom**: σύρε στο chart για zoom, διπλό κλικ για reset
+## Usage
 
+- **Sidebar**: click any item to toggle on/off
+- **1Y / 2Y / 5Y / 10Y**: filter by time period
+- **Normalized (base=100)**: toggle normalization on/off
+  → ideal for comparing correlations across different units and scales
+- **Hover**: unified tooltip showing all values for a given date
+- **Zoom**: drag on chart to zoom, double-click to reset
 
-## GitHub Pages
+## Live Dashboard
 
-1. Το dashboard τρέχει στο https://bakidiskostas.github.io/commodity-dashboard/
+🔗 https://bakidiskostas.github.io/commodity-dashboard/
 
+## Automatic Weekly Update (GitHub Actions)
 
-## GitHub Action αυτόματη ανανέωση
-
-Δημιούργησε `.github/workflows/update-data.yml`:
+Data is refreshed automatically every Monday at 06:00 UTC
+via GitHub Actions.
 
 ```yaml
 name: Update commodity data
-
 on:
   schedule:
-    - cron: '0 6 * * 1'   # κάθε Δευτέρα 06:00 UTC
-  workflow_dispatch:        # manual trigger
-
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
 jobs:
   fetch:
     runs-on: ubuntu-latest
@@ -79,17 +97,15 @@ jobs:
           commit_message: 'data: weekly update'
 ```
 
----
-
-## Δομή αρχείων
+## File Structure
 
 ```
 commodity-dashboard/
-├── index.html              ← Dashboard (άνοιξε στον browser)
+├── index.html              ← Dashboard (open in browser)
 ├── README.md
 ├── scripts/
-│   └── fetch_data.py       ← Python script για δεδομένα
+│   └── fetch_data.py       ← Python script for data fetching
 └── data/
-    ├── commodities.json    ← Δημιουργείται από το script
-    └── indicators.json     ← Δημιουργείται από το script
+    ├── commodities.json    ← Generated by script
+    └── indicators.json     ← Generated by script
 ```
