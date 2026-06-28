@@ -70,7 +70,7 @@ input:checked+.tsl::before{transform:translateX(15px);background:#fff}
 #cm{flex:2;min-height:0}
 
 /* Bar chart — takes 1/3 by flex-grow, hidden by default */
-#bw{flex:1;min-height:0;border-top:1px solid var(--bor);display:none;flex-direction:column}
+#bw{flex:1.1;min-height:0;border-top:1px solid var(--bor);display:none;flex-direction:column;padding-bottom:4px}
 #bw.vis{display:flex}
 #pb{flex:1;min-height:0;width:100%;height:100%}
 
@@ -225,7 +225,12 @@ function renderMain(){
   if(!lines.length){Plotly.purge('pm');con.innerHTML=`<div class="ov"><div class="ic">📊</div><p>Select at least one series from the sidebar.</p></div>`;return;}
   if(!document.getElementById('pm')){con.innerHTML='<div id="pm" style="height:100%;width:100%"></div>';}
   const traces=lines.map(s=>{let d=filterY(s.data);if(norm)d=normalise(d);return{x:d.map(r=>r.date),y:d.map(r=>r.value),name:s.label,type:'scatter',mode:'lines',line:{color:s.color,width:1.5},hovertemplate:`<b>${s.label}</b><br>%{x}<br>%{y:.2f} ${norm?'(base=100)':s.unit}<extra></extra>`};});
-  Plotly.react('pm',traces,{autosize:true,paper_bgcolor:'#0d1117',plot_bgcolor:'#0d1117',font:{family:'Inter,system-ui,sans-serif',color:'#8b949e',size:11},xaxis:axStyle(),yaxis:{...axStyle(),title:{text:norm?'Index (base=100)':'Price',font:{size:10}}},legend:{bgcolor:'#161b22',bordercolor:'#30363d',borderwidth:1,font:{size:10},orientation:'v'},hovermode:'x unified',hoverlabel:{bgcolor:'#1c2330',bordercolor:'#30363d',font:{size:11}},margin:{t:8,r:160,b:36,l:52}},CFG);
+  const mob = window.innerWidth <= 900;
+  const mainLegend = mob
+    ? {bgcolor:'#161b22',bordercolor:'#30363d',borderwidth:1,font:{size:9},orientation:'h',x:0,y:1.02,yanchor:'bottom'}
+    : {bgcolor:'#161b22',bordercolor:'#30363d',borderwidth:1,font:{size:10},orientation:'v'};
+  const mainMargin = mob ? {t:28,r:14,b:30,l:46} : {t:8,r:160,b:36,l:52};
+  Plotly.react('pm',traces,{autosize:true,paper_bgcolor:'#0d1117',plot_bgcolor:'#0d1117',font:{family:'Inter,system-ui,sans-serif',color:'#8b949e',size:11},xaxis:axStyle(),yaxis:{...axStyle(),title:{text:norm?'Index (base=100)':'Price',font:{size:10}}},legend:mainLegend,hovermode:'x unified',hoverlabel:{bgcolor:'#1c2330',bordercolor:'#30363d',font:{size:11}},margin:mainMargin},CFG);
 }
 
 function renderBar(){
@@ -235,7 +240,7 @@ function renderBar(){
   if(!bars.length){bw.classList.remove('vis');Plotly.purge('pb');return;}
   bw.classList.add('vis');
   const traces=bars.map(s=>{const d=filterY(s.data);return{x:d.map(r=>r.date),y:d.map(r=>r.value),name:s.label,type:'bar',opacity:0.85,marker:{color:s.color},hovertemplate:`<b>${s.label}</b><br>%{x}<br>%{y:.2f} ${s.unit}<extra></extra>`};});
-  Plotly.react('pb',traces,{autosize:true,paper_bgcolor:'#0d1117',plot_bgcolor:'#0d1117',font:{family:'Inter,system-ui,sans-serif',color:'#8b949e',size:11},xaxis:axStyle(),yaxis:{...axStyle(),title:{text:'%',font:{size:10}}},legend:{bgcolor:'#161b22',bordercolor:'#30363d',borderwidth:1,font:{size:10},orientation:'h',x:0,y:1.02,yanchor:'bottom'},barmode:'group',hovermode:'x unified',hoverlabel:{bgcolor:'#1c2330',bordercolor:'#30363d',font:{size:11}},margin:{t:30,r:20,b:30,l:52}},CFG);
+  Plotly.react('pb',traces,{autosize:true,paper_bgcolor:'#0d1117',plot_bgcolor:'#0d1117',font:{family:'Inter,system-ui,sans-serif',color:'#8b949e',size:11},xaxis:axStyle(),yaxis:{...axStyle(),title:{text:'%',font:{size:10}}},legend:{bgcolor:'#161b22',bordercolor:'#30363d',borderwidth:1,font:{size:10},orientation:'h',x:0,y:1.02,yanchor:'bottom'},barmode:'group',hovermode:'x unified',hoverlabel:{bgcolor:'#1c2330',bordercolor:'#30363d',font:{size:11}},margin:{t:28,r:14,b:34,l:46}},CFG);
 }
 
 document.querySelectorAll('.rb').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.rb').forEach(x=>x.classList.remove('active'));b.classList.add('active');activeY=parseInt(b.dataset.y);renderAll();}));
