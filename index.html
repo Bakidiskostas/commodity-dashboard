@@ -64,8 +64,21 @@ input:checked+.tsl::before{transform:translateX(15px);background:#fff}
 .bb:hover,.bb.active{border-color:var(--acc2);color:var(--acc2);background:rgba(59,127,212,.1)}
 
 /* Single chart container — fills all remaining space */
-.charts{flex:1;min-height:0;display:flex;overflow:hidden}
+.charts{flex:1;min-height:0;display:flex;overflow:hidden;position:relative}
 #plt{flex:1;min-height:0;min-width:0}
+
+/* Draggable divider between the two charts */
+#divider{
+  position:absolute; left:0; right:0; height:14px;
+  cursor:row-resize; z-index:20;
+  display:flex; align-items:center; justify-content:center;
+}
+#divider::before{
+  content:''; width:60px; height:4px; border-radius:2px;
+  background:var(--bor); transition:background .15s;
+}
+#divider:hover::before{ background:var(--acc); }
+#divider.dragging::before{ background:var(--acc); }
 
 /* Overlay/loading */
 .ov{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:10px;color:var(--mut);font-size:12px;text-align:center}
@@ -154,6 +167,7 @@ input:checked+.tsl::before{transform:translateX(15px);background:#fff}
       <div id="plt" style="width:100%;height:100%">
         <div class="ov" id="loading"><div class="ic">⏳</div><p>Loading data…</p></div>
       </div>
+      <div id="divider"></div>
     </div>
   </main>
 </div>
@@ -174,6 +188,7 @@ const FIXED_COLORS={
   'EU GDP Growth':'#56d3c8',           // teal
 };
 let all=[], activeY=10, norm=false, barCat='all', ci=0;
+let splitPos=0.62; // boundary between line (top) and bar (bottom), 0..1
 
 // Hamburger
 const sb=document.getElementById('sb'), ov=document.getElementById('ov');
@@ -285,12 +300,12 @@ function renderAll(){
   };
 
   if(hasBar){
-    // On mobile give the bar chart more vertical room
-    const lineTop = mob ? 0.46 : 0.40;
-    const barTop  = mob ? 0.34 : 0.30;
-    layout.yaxis.domain = [lineTop, 1];
+    // splitPos controls the boundary; gap of 0.08 between subplots
+    const gap=0.08;
+    const lineBottom = Math.min(0.95, Math.max(0.25, splitPos)) ;
+    layout.yaxis.domain = [lineBottom, 1];
     layout.yaxis2={...axStyle(),
-      domain:[0, barTop],
+      domain:[0, Math.max(0.05, lineBottom-gap)],
       title:{text:'%', font:{size:10}}};
   }
 
@@ -305,6 +320,47 @@ let resizeTimer;
 window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{sb.classList.remove('open');ov.classList.remove('vis');renderAll();},200);});
 
 function showErr(){document.getElementById('plt').innerHTML=`<div class="ov"><div class="ic">⚠️</div><p>Data files not found.<br>Run the Python script first:</p><code>python scripts/fetch_data.py</code></div>`;}
+
+// ── Draggable divider ────────────────────────────────────────────────────────
+const divider=document.getElementById('divider');
+const chartsEl=document.querySelector('.charts');
+
+function positionDivider(){
+  // Only show divider when bar chart is visible
+  const bars=all.filter(s=>s.active&&s.chart_type==='bar');
+  const showBars = barCat==='all' ? bars.length>0 : bars.filter(s=>s.category===barCat).length>0;
+  if(!showBars){ divider.style.display='none'; return; }
+  divider.style.display='flex';
+  // Plotly domain is measured from bottom; convert to top-offset in px
+  const h=chartsEl.clientHeight;
+  // boundary y (from top) = (1 - splitPos) * plottable height; approximate with full height
+  const topPx = (1 - splitPos) * h;
+  divider.style.top = (topPx - 7) + 'px';
+}
+
+let dragging=false;
+divider.addEventListener('mousedown',e=>{dragging=true;divider.classList.add('dragging');e.preventDefault();});
+divider.addEventListener('touchstart',e=>{dragging=true;divider.classList.add('dragging');},{passive:true});
+
+function onMove(clientY){
+  if(!dragging) return;
+  const rect=chartsEl.getBoundingClientRect();
+  let frac = (clientY - rect.top) / rect.height; // 0 at top, 1 at bottom
+  // splitPos is the line-chart bottom (domain), measured from bottom => 1 - frac
+  splitPos = Math.min(0.90, Math.max(0.20, 1 - frac));
+  renderAll();
+  positionDivider();
+}
+window.addEventListener('mousemove',e=>onMove(e.clientY));
+window.addEventListener('touchmove',e=>{if(dragging&&e.touches[0])onMove(e.touches[0].clientY);},{passive:true});
+window.addEventListener('mouseup',()=>{dragging=false;divider.classList.remove('dragging');});
+window.addEventListener('touchend',()=>{dragging=false;divider.classList.remove('dragging');});
+
+// Reposition divider after each render and on resize
+const _origRenderAll = renderAll;
+renderAll = function(){ _origRenderAll(); setTimeout(positionDivider, 50); };
+
+window.addEventListener('resize',()=>setTimeout(positionDivider,250));
 
 loadData();
 </script>
