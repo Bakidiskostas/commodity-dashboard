@@ -5,19 +5,19 @@ Interactive dashboard για συσχέτιση τιμών μετάλλων κα
 
 ## Τι περιλαμβάνει
 
-**Commodities** (Yahoo Finance)
+**Commodities**
 - Precious Metals: Gold, Silver, Platinum, Palladium
-- Base Metals: Copper, Aluminum, Nickel, Zinc
+- Base Metals: Copper, Aluminum, Nickel, Zinc, Tin/Solder
 - Energy: Brent Oil, WTI Oil, Natural Gas
 
-**Financial Indicators** (FRED / St. Louis Fed — δωρεάν)
+**Financial Indicators** 
 - USD Index (DXY), EUR/USD
-- Fed Funds Rate, ECB Deposit Rate
-- US CPI (Inflation)
+- Intererst rates FED and ECB
+- US & EU CPI (Inflation)
 - S&P 500, VIX
 - US 10Y Treasury Yield
-
-
+- US & EU GDP Growth
+- US PMI
 
 ## Χρήση
 
@@ -29,8 +29,7 @@ Interactive dashboard για συσχέτιση τιμών μετάλλων κα
 - **Zoom**: σύρε στο chart για zoom, διπλό κλικ για reset
 
 
-
-## GitHub Pages (δωρεάν hosting)
+## GitHub Pages
 
 1. Το dashboard τρέχει στο https://bakidiskostas.github.io/commodity-dashboard/
 
