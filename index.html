@@ -160,6 +160,19 @@ input:checked+.tsl::before{transform:translateX(15px);background:#fff}
 
 <script>
 const PAL=['#d4a843','#3b7fd4','#3fb950','#e05c5c','#a371f7','#f0883e','#56d3c8','#ff7eb6','#7ee787','#79c0ff','#ffa657','#d2a8ff','#ff9492','#86efac','#b3d4f5','#ffe680','#98d8c8','#f9a8d4','#c4b5fd','#6e7681','#c9d1d9','#58a6ff'];
+
+// Fixed, high-contrast colors for specific series (so overlapping bars stay distinct)
+const FIXED_COLORS={
+  // Interest rates — cool tones
+  'Fed Funds Rate':'#3b7fd4',          // blue
+  'ECB Main Refinancing Rate':'#d4a843',// gold
+  // Inflation — warm tones (contrast vs rates)
+  'US Inflation (CPI YoY)':'#e05c5c',  // red
+  'EU Inflation (CPI YoY)':'#f0883e',  // orange
+  // GDP — green tones
+  'US GDP Growth':'#3fb950',           // green
+  'EU GDP Growth':'#56d3c8',           // teal
+};
 let all=[], activeY=10, norm=false, barCat='all', ci=0;
 
 // Hamburger
@@ -175,7 +188,7 @@ async function loadData(){
     document.getElementById('lu').textContent=cd.meta?.fetched_at?'Updated: '+new Date(cd.meta.fetched_at).toLocaleString('en-GB'):'';
     all=[];
     for(const s of cd.series) all.push({...s,sidebarType:'commodity',color:PAL[ci++%PAL.length],active:s.default_on===true});
-    for(const s of id.series) all.push({...s,sidebarType:'indicator',color:PAL[ci++%PAL.length],active:s.default_on===true});
+    for(const s of id.series) all.push({...s,sidebarType:'indicator',color:FIXED_COLORS[s.label]||PAL[ci++%PAL.length],active:s.default_on===true});
     buildSidebar(); renderAll();
   }catch(e){showErr();}
 }
@@ -241,9 +254,9 @@ function renderAll(){
     const d=filterY(s.data);
     traces.push({
       x:d.map(r=>r.date), y:d.map(r=>r.value),
-      name:s.label, type:'bar', opacity:0.55,
+      name:s.label, type:'bar', opacity:0.6,
       xaxis:'x', yaxis:'y2',
-      marker:{color:s.color},
+      marker:{color:s.color, line:{color:s.color, width:0.5}},
       hovertemplate:`<b>${s.label}</b><br>%{x}<br>%{y:.2f} ${s.unit}<extra></extra>`
     });
   }
