@@ -1,7 +1,7 @@
 # 📊 Commodity & Financial Indicators Dashboard
 
 Interactive dashboard for correlating metal prices with macroeconomic indicators —
-built for Einkaufscontrolling (procurement controlling).
+built for procurement controlling.
 
 ## What it includes
 
