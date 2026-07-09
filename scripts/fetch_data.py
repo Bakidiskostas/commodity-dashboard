@@ -1,7 +1,7 @@
 """
 Commodity & Financial Indicators — Data Fetcher
 """
-import json, os
+import json, os, io, requests
 from datetime import datetime, timedelta
 import pandas as pd
 import yfinance as yf
