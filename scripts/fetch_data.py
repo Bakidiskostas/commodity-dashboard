@@ -78,7 +78,10 @@ def fetch_fred(item):
     fid = item.get("fred_id") or item.get("ticker")
     print(f"  down {item['label']} ({fid}) ...", end=" ")
     try:
-        df = pd.read_csv(f"{FRED_BASE}?id={fid}", na_values=".")
+        r = requests.get(f"{FRED_BASE}?id={fid}",
+                         headers={"User-Agent": "Mozilla/5.0"}, timeout=30)
+        r.raise_for_status()
+        df = pd.read_csv(io.StringIO(r.text), na_values=".")
         date_col, value_col = df.columns[0], df.columns[1]
         df[date_col] = pd.to_datetime(df[date_col], errors="coerce")
         df = df.dropna(subset=[date_col]).set_index(date_col)
