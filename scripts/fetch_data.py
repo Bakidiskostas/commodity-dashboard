@@ -116,7 +116,9 @@ def main():
     for item in INDICATORS:
         r = fetch_fred(item)
         if r: indicator_results.append(r)
-
+if len(indicator_results) < 10 or len(commodity_results) < 8:
+        print("\nERROR: Too many downloads failed - keeping old data.")
+        raise SystemExit(1)
     meta = {"fetched_at": datetime.now().isoformat(),
             "start_date": START_DATE.strftime("%Y-%m-%d"),
             "end_date":   END_DATE.strftime("%Y-%m-%d")}
