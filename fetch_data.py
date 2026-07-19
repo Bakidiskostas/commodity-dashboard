@@ -37,7 +37,7 @@ COMMODITIES = [
     # Base Metals
     {"source":"yahoo","ticker":"HG=F",  "label":"Copper",            "unit":"USD/lb",    "category":"Base Metals",   "chart_type":"line","default_on":False},
     {"source":"yahoo","ticker":"ALI=F", "label":"Aluminum",          "unit":"USD/MT",    "category":"Base Metals",   "chart_type":"line","default_on":False},
-    {"source":"yahoo","ticker":"ZC=F",  "label":"Zinc",              "unit":"USD/MT",    "category":"Base Metals",   "chart_type":"line","default_on":False},
+    {"source":"fred", "ticker":"PZINCUSDM", "label":"Zinc (LME)",    "unit":"USD/MT",    "category":"Base Metals", "chart_type":"line","default_on":False},
     {"source":"fred", "ticker":"PNICKUSDM","label":"Nickel (LME)",   "unit":"USD/MT",    "category":"Base Metals",   "chart_type":"line","default_on":False},
     {"source":"fred", "ticker":"PTINUSDM", "label":"Tin / Solder (LME)","unit":"USD/MT","category":"Base Metals",   "chart_type":"line","default_on":False},
     # Energy
