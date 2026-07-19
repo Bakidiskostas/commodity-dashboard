@@ -1,4 +1,4 @@
-<img src="banner_preview.png" ...
+<img src="banner_preview.png" alt="Commodity Dashboard" width="100%">
 
 # Commodity & Financial Indicators Dashboard
 
