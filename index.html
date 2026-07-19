@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Commodity Dashboard — Einkaufscontrolling</title>
+<title>Commodity Dashboard — Procurement Controlling</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.32.0/plotly.min.js"></script>
 <style>
 :root{--bg:#0d1117;--sur:#161b22;--sur2:#1c2330;--bor:#30363d;--txt:#e6edf3;--mut:#8b949e;--acc:#d4a843;--acc2:#3b7fd4;--r:6px;--font:'Inter','Segoe UI',system-ui,sans-serif;--mono:'JetBrains Mono',monospace}
@@ -12,10 +12,11 @@ html,body{height:100vh;height:100dvh;max-height:100dvh;overflow:hidden;margin:0}
 body{background:var(--bg);color:var(--txt);font-family:var(--font);font-size:13px;display:flex;flex-direction:column;height:100vh;height:100dvh}
 
 /* Header */
-header{padding:6px 18px;border-bottom:1px solid var(--bor);display:flex;align-items:center;gap:10px;flex-shrink:0}
-.logo{font-size:15px;font-weight:700;color:var(--acc);letter-spacing:-.3px}
-.logo span{color:var(--mut);font-weight:400;font-size:11px;margin-left:6px}
-#lu{margin-left:auto;font-size:10px;color:var(--mut);font-family:var(--mono)}
+header{padding:0 18px;height:64px;border-bottom:1px solid var(--bor);display:flex;align-items:center;gap:10px;flex-shrink:0;
+  background:url('./assets/banner.svg') center center/cover no-repeat,var(--sur);position:relative}
+.logo{font-size:17px;font-weight:700;color:var(--acc);letter-spacing:-.3px;text-shadow:0 1px 6px rgba(0,0,0,.9);position:relative}
+.logo span{color:#c9d4e0;font-weight:400;font-size:11px;margin-left:6px;text-shadow:0 1px 4px rgba(0,0,0,.9)}
+#lu{margin-left:auto;font-size:10px;color:#c9d4e0;font-family:var(--mono);text-shadow:0 1px 4px rgba(0,0,0,.9);position:relative}
 .hamburger{display:none;background:transparent;border:1px solid var(--bor);border-radius:var(--r);padding:5px 9px;cursor:pointer;color:var(--mut);font-size:16px;line-height:1;flex-shrink:0}
 
 /* Shell */
@@ -33,6 +34,9 @@ aside{width:200px;flex-shrink:0;background:var(--sur);border-right:1px solid var
 .sw{width:8px;height:8px;border-radius:2px;flex-shrink:0}
 .sl{font-size:11px;flex:1;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bar-tag{font-size:8px;color:var(--acc2);background:rgba(59,127,212,.15);border:1px solid rgba(59,127,212,.3);padding:0 4px;border-radius:3px;flex-shrink:0}
+.sret{font-size:9px;font-family:var(--mono);flex-shrink:0;margin-left:auto;padding-left:4px}
+.sret.up{color:#3fb950}
+.sret.dn{color:#f85149}
 .si.off .sl{color:var(--mut)}
 .si.off .sw{opacity:.2}
 
@@ -94,7 +98,8 @@ input:checked+.tsl::before{transform:translateX(15px);background:#fff}
   .hamburger{display:block}
   .logo span{display:none}
   #lu{font-size:9px}
-  header{padding:8px 12px}
+  header{padding:0 12px;height:54px}
+  .logo{font-size:14px}
 
   aside{
     position:fixed;top:0;left:0;bottom:0;
@@ -113,7 +118,7 @@ input:checked+.tsl::before{transform:translateX(15px);background:#fff}
 
   /* Landscape: more compact header to save vertical space */
   @media(orientation:landscape){
-    header{padding:4px 12px}
+    header{height:44px}
     .logo{font-size:13px}
     .ctrl{padding:3px 8px}
     .bctrl{padding:2px 8px}
@@ -125,7 +130,7 @@ input:checked+.tsl::before{transform:translateX(15px);background:#fff}
 
 <header>
   <button class="hamburger" id="hbg">☰</button>
-  <div class="logo">Commodity Dashboard <span>Einkaufscontrolling</span></div>
+  <div class="logo">Commodity Dashboard <span>Procurement Controlling</span></div>
   <div id="lu">—</div>
 </header>
 
@@ -149,7 +154,9 @@ input:checked+.tsl::before{transform:translateX(15px);background:#fff}
       <button class="rb" data-y="5">5Y</button>
       <button class="rb active" data-y="10">10Y</button>
       <div class="nw">
-        <span class="nl">Normalized (base=100)</span>
+        <span class="nl">Forecast</span>
+        <label class="tgl"><input type="checkbox" id="fc"><span class="tsl"></span></label>
+        <span class="nl" style="margin-left:12px">Normalized (base=100)</span>
         <label class="tgl"><input type="checkbox" id="nt"><span class="tsl"></span></label>
       </div>
     </div>
@@ -186,8 +193,19 @@ const FIXED_COLORS={
   // GDP — green tones
   'US GDP Growth':'#3fb950',           // green
   'EU GDP Growth':'#56d3c8',           // teal
+  // FOMC projections — lighter variants of their actual-series colors
+  'Fed Funds (FOMC Projection)':'#79c0ff',
+  'US Inflation PCE (FOMC Projection)':'#ff9492',
+  'US GDP (FOMC Projection)':'#7ee787',
 };
-let all=[], activeY=10, norm=false, barCat='all', ci=0;
+function hexA(hex,a){const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return `rgba(${r},${g},${b},${a})`;}
+// Each projection is tied to its actual series — shown only when that series is selected
+const PROJ_PARENT={
+  'Fed Funds (FOMC Projection)':'Fed Funds Rate',
+  'US Inflation PCE (FOMC Projection)':'US Inflation (CPI YoY)',
+  'US GDP (FOMC Projection)':'US GDP Growth',
+};
+let all=[], activeY=10, norm=false, barCat='all', ci=0, fcast=false;
 let splitPos=0.36; // boundary between line (top) and bar (bottom), 0..1
 
 // Hamburger
@@ -197,7 +215,8 @@ ov.addEventListener('click',()=>{sb.classList.remove('open');ov.classList.remove
 
 async function loadData(){
   try{
-    const [cr,ir]=await Promise.all([fetch('./data/commodities.json'),fetch('./data/indicators.json')]);
+    const cb='?v='+Date.now();  // cache-busting: always load fresh JSON
+    const [cr,ir]=await Promise.all([fetch('./data/commodities.json'+cb,{cache:'no-store'}),fetch('./data/indicators.json'+cb,{cache:'no-store'})]);
     if(!cr.ok||!ir.ok) throw new Error();
     const [cd,id]=await Promise.all([cr.json(),ir.json()]);
     document.getElementById('lu').textContent=cd.meta?.fetched_at?'Updated: '+new Date(cd.meta.fetched_at).toLocaleString('en-GB'):'';
@@ -212,7 +231,7 @@ function buildSidebar(){
   const cl=document.getElementById('clist'),il=document.getElementById('ilist');
   cl.innerHTML='';il.innerHTML='';
   const g={};
-  for(const s of all){const k=s.sidebarType+'::'+s.category;(g[k]??=[]).push(s);}
+  for(const s of all){if(s.is_projection)continue;const k=s.sidebarType+'::'+s.category;(g[k]??=[]).push(s);}
   for(const[k,items]of Object.entries(g)){
     const[sType,cat]=k.split('::');
     const t=sType==='commodity'?cl:il;
@@ -220,10 +239,23 @@ function buildSidebar(){
     for(const s of items){
       const el=document.createElement('div');
       el.className='si'+(s.active?'':' off');
-      el.innerHTML=`<div class="sw" style="background:${s.color}"></div><span class="sl">${s.label}</span>${s.chart_type==='bar'?'<span class="bar-tag">BAR</span>':''}`;
+      el.innerHTML=`<div class="sw" style="background:${s.color}"></div><span class="sl">${s.label}</span>${s.chart_type==='bar'?'<span class="bar-tag">BAR</span>':'<span class="sret"></span>'}`;
       el.addEventListener('click',()=>{s.active=!s.active;el.classList.toggle('off',!s.active);renderAll();});
+      s._retEl=el.querySelector('.sret');
       t.appendChild(el);
     }
+  }
+  updateSidebarReturns();
+}
+
+// % return over the displayed period, next to each series in the sidebar
+function updateSidebarReturns(){
+  for(const s of all){
+    if(!s._retEl)continue;
+    const p=pctRet(filterY(s.data));
+    if(p===null){s._retEl.textContent='';continue;}
+    s._retEl.textContent=`${p>=0?'+':''}${p.toFixed(1)}%`;
+    s._retEl.className='sret '+(p>=0?'up':'dn');
   }
 }
 
@@ -231,14 +263,36 @@ function toggleAll(on){all.forEach(s=>s.active=on);document.querySelectorAll('.s
 
 function filterY(data){const cut=new Date();cut.setFullYear(cut.getFullYear()-activeY);return data.filter(d=>new Date(d.date)>=cut);}
 function normalise(data){if(!data.length)return data;const b=data[0].value;if(!b)return data;return data.map(d=>({...d,value:Math.round(d.value/b*10000)/100}));}
+// A projection shows only if Forecast is on AND its parent series is selected
+function projOn(s){
+  if(!s.is_projection)return false;
+  if(!fcast)return false;
+  const p=PROJ_PARENT[s.label];
+  if(!p)return false;
+  const parent=all.find(x=>x.label===p);
+  return !!(parent&&parent.active);
+}
+// % return over the currently displayed period
+function pctRet(d){
+  if(d.length<2)return null;
+  const a=d[0].value,b=d[d.length-1].value;
+  if(!a)return null;
+  return (b/a-1)*100;
+}
+function retTag(d){
+  const p=pctRet(d);
+  if(p===null)return '';
+  return `  ${p>=0?'+':''}${p.toFixed(1)}%`;
+}
 
 function axStyle(){return{gridcolor:'#21262d',linecolor:'#30363d',zerolinecolor:'#30363d',tickcolor:'#30363d',tickfont:{color:'#8b949e',size:10}};}
 const CFG={responsive:true,displayModeBar:true,modeBarButtonsToRemove:['select2d','lasso2d','autoScale2d'],displaylogo:false,toImageButtonOptions:{format:'png',filename:'commodity_dashboard',scale:2}};
 
 function renderAll(){
+  updateSidebarReturns();
   const plt=document.getElementById('plt');
   const lines=all.filter(s=>s.active&&s.chart_type!=='bar');
-  let bars=all.filter(s=>s.active&&s.chart_type==='bar');
+  let bars=all.filter(s=>s.chart_type==='bar'&&(s.is_projection?projOn(s):s.active));
   if(barCat!=='all')bars=bars.filter(s=>s.category===barCat);
 
   if(!lines.length&&!bars.length){
@@ -254,24 +308,44 @@ function renderAll(){
 
   // Line traces → top subplot (y axis)
   for(const s of lines){
-    let d=filterY(s.data);
-    if(norm)d=normalise(d);
+    const raw=filterY(s.data);
+    const base=(norm&&raw.length&&raw[0].value)?raw[0].value:null;
+    const nz=v=>base?Math.round(v/base*10000)/100:v;
+    const d=base?raw.map(r=>({...r,value:nz(r.value)})):raw;
     traces.push({
       x:d.map(r=>r.date), y:d.map(r=>r.value),
-      name:s.label, type:'scatter', mode:'lines',
+      name:s.label+retTag(raw), type:'scatter', mode:'lines',
       xaxis:'x', yaxis:'y',
       line:{color:s.color,width:1.5},
       hovertemplate:`<b>${s.label}</b><br>%{x}<br>%{y:.2f} ${norm?'(base=100)':s.unit}<extra></extra>`
     });
+    // Fan chart — statistical projection bands (Forecast mode)
+    if(fcast && s.fan){
+      const f=s.fan, xr=[...f.dates].reverse();
+      const B=arr=>arr.map(nz);
+      traces.push({x:[...f.dates,...xr], y:[...B(f.hi90),...B([...f.lo90].reverse())],
+        type:'scatter', fill:'toself', fillcolor:hexA(s.color,0.09),
+        line:{width:0}, showlegend:false, hoverinfo:'skip', xaxis:'x', yaxis:'y', name:s.label+' 90%'});
+      traces.push({x:[...f.dates,...xr], y:[...B(f.hi50),...B([...f.lo50].reverse())],
+        type:'scatter', fill:'toself', fillcolor:hexA(s.color,0.16),
+        line:{width:0}, showlegend:false, hoverinfo:'skip', xaxis:'x', yaxis:'y', name:s.label+' 50%'});
+      const last=d[d.length-1];
+      traces.push({x:[last?last.date:f.dates[0],...f.dates], y:[last?last.value:nz(f.median[0]),...B(f.median)],
+        type:'scatter', mode:'lines', line:{color:s.color,width:1.2,dash:'dot'},
+        showlegend:false, xaxis:'x', yaxis:'y', name:s.label+' proj.',
+        hovertemplate:`<b>${s.label} — projection</b><br>%{x}<br>median %{y:.2f} ${norm?'(base=100)':s.unit}<extra></extra>`});
+    }
   }
   // Bar traces → bottom subplot (y2 axis)
   for(const s of bars){
     const d=filterY(s.data);
     traces.push({
       x:d.map(r=>r.date), y:d.map(r=>r.value),
-      name:s.label, type:'bar', opacity:0.6,
+      name:s.label, type:'bar', opacity:s.is_projection?0.45:0.6,
       xaxis:'x', yaxis:'y2',
-      marker:{color:s.color, line:{color:s.color, width:0.5}},
+      marker:s.is_projection
+        ?{color:s.color, pattern:{shape:'/', size:4, solidity:0.4}, line:{color:s.color, width:0.5}}
+        :{color:s.color, line:{color:s.color, width:0.5}},
       hovertemplate:`<b>${s.label}</b><br>%{x}<br>%{y:.2f} ${s.unit}<extra></extra>`
     });
   }
@@ -288,7 +362,7 @@ function renderAll(){
     showlegend:true,
     legend:{bgcolor:'#161b22',bordercolor:'#30363d',borderwidth:1,font:{size:10},
             orientation:'h', x:0, y:1.04, yanchor:'bottom'},
-    margin:{t:34, r:16, b:40, l:52},
+    margin:{t:34, r:16, b:fcast?56:40, l:52},
 
     // Shared X axis (anchored to the bottom-most subplot)
     xaxis:{...axStyle(), anchor: hasBar?'y2':'y'},
@@ -298,6 +372,18 @@ function renderAll(){
       domain: hasBar?[0.40,1]:[0,1],
       title:{text: norm?'Index (base=100)':'Price', font:{size:10}}},
   };
+
+  if(fcast){
+    const anyCurve=lines.some(s=>s.fan&&s.fan.source==='futures');
+    const midTxt=anyCurve
+      ?'Dotted line: futures curve (what the market pays today for forward delivery — not a forecast)'
+      :'Dotted line: last price carried forward (no futures chain available)';
+    layout.annotations=[{
+      text:midTxt+' · Bands: 50% / 90% statistical range from historical volatility · Hatched bars: official FOMC median projections',
+      showarrow:false, xref:'paper', yref:'paper', x:0, y:-0.09, xanchor:'left',
+      font:{size:9, color:'#8b949e'}
+    }];
+  }
 
   if(hasBar){
     // splitPos controls the boundary; gap of 0.08 between subplots
@@ -314,6 +400,7 @@ function renderAll(){
 
 document.querySelectorAll('.rb').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.rb').forEach(x=>x.classList.remove('active'));b.classList.add('active');activeY=parseInt(b.dataset.y);renderAll();}));
 document.getElementById('nt').addEventListener('change',e=>{norm=e.target.checked;renderAll();});
+document.getElementById('fc').addEventListener('change',e=>{fcast=e.target.checked;renderAll();});
 document.querySelectorAll('.bb').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.bb').forEach(x=>x.classList.remove('active'));b.classList.add('active');barCat=b.dataset.bc;renderAll();}));
 
 let resizeTimer;
@@ -327,7 +414,7 @@ const chartsEl=document.querySelector('.charts');
 
 function positionDivider(){
   // Only show divider when bar chart is visible
-  const bars=all.filter(s=>s.active&&s.chart_type==='bar');
+  const bars=all.filter(s=>s.chart_type==='bar'&&(s.is_projection?projOn(s):s.active));
   const showBars = barCat==='all' ? bars.length>0 : bars.filter(s=>s.category===barCat).length>0;
   if(!showBars){ divider.style.display='none'; return; }
   divider.style.display='flex';
