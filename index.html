@@ -12,8 +12,8 @@ html,body{height:100vh;height:100dvh;max-height:100dvh;overflow:hidden;margin:0}
 body{background:var(--bg);color:var(--txt);font-family:var(--font);font-size:13px;display:flex;flex-direction:column;height:100vh;height:100dvh}
 
 /* Header */
-header{padding:0 18px;height:84px;border-bottom:1px solid var(--bor);display:flex;align-items:center;gap:10px;flex-shrink:0;
-  background:url('./banner_preview.png') center center/cover no-repeat,var(--sur);position:relative}
+header{padding:0 18px;height:clamp(110px,10vw,250px);border-bottom:1px solid var(--bor);display:flex;align-items:center;gap:10px;flex-shrink:0;
+  background:url('./banner_preview.png') center 54%/cover no-repeat,var(--sur);position:relative}
 .logo{font-size:17px;font-weight:700;color:var(--acc);letter-spacing:-.3px;text-shadow:0 1px 6px rgba(0,0,0,.9);position:relative}
 .logo span{color:#c9d4e0;font-weight:400;font-size:11px;margin-left:6px;text-shadow:0 1px 4px rgba(0,0,0,.9)}
 #lu{margin-left:auto;font-size:10px;color:#c9d4e0;font-family:var(--mono);text-shadow:0 1px 4px rgba(0,0,0,.9);position:relative}
@@ -98,7 +98,7 @@ input:checked+.tsl::before{transform:translateX(15px);background:#fff}
   .hamburger{display:block}
   .logo span{display:none}
   #lu{font-size:9px}
-  header{padding:0 12px;height:64px}
+  header{padding:0 12px;height:clamp(80px,14vw,130px)}
   .logo{font-size:14px}
 
   aside{
@@ -118,7 +118,7 @@ input:checked+.tsl::before{transform:translateX(15px);background:#fff}
 
   /* Landscape: more compact header to save vertical space */
   @media(orientation:landscape){
-    header{height:52px}
+    header{height:clamp(70px,10vw,110px)}
     .logo{font-size:13px}
     .ctrl{padding:3px 8px}
     .bctrl{padding:2px 8px}
