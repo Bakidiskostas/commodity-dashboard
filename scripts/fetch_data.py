@@ -60,13 +60,15 @@ INDICATORS = [
     # Inflation — BAR
     {"fred_id":"CPIAUCSL",           "label":"US Inflation (CPI YoY)","unit":"%",   "category":"Inflation",     "chart_type":"bar", "default_on":False,"pct_change_yoy":True},
     {"fred_id":"CP0000EZ19M086NEST", "label":"EU Inflation (CPI YoY)","unit":"%",   "category":"Inflation",     "chart_type":"bar", "default_on":False,"pct_change_yoy":True},
-    # PMI
-    {"fred_id":"MANEMP",             "label":"US Manufacturing",   "unit":"Index",  "category":"PMI",           "chart_type":"line","default_on":False},
+    # Industrial Activity
+    {"fred_id":"INDPRO",             "label":"US Industrial Production","unit":"Index (2017=100)","category":"Industrial Activity","chart_type":"line","default_on":False},
     # Equities
     {"fred_id":"SP500",              "label":"S&P 500",            "unit":"Points", "category":"Equities",      "chart_type":"line","default_on":False},
     {"fred_id":"NASDAQCOM",          "label":"NASDAQ Composite",   "unit":"Points", "category":"Equities",      "chart_type":"line","default_on":False},
     {"fred_id":"DJIA",               "label":"Dow Jones (DJIA)",   "unit":"Points", "category":"Equities",      "chart_type":"line","default_on":False},
     {"fred_id":"VIXCLS",             "label":"VIX (Volatility)",   "unit":"Index",  "category":"Equities",      "chart_type":"line","default_on":False},
+    {"source":"yahoo","ticker":"000300.SS","label":"CSI 300 (China)",  "unit":"Points", "category":"Equities",      "chart_type":"line","default_on":False},
+    {"source":"yahoo","ticker":"^HSI",     "label":"Hang Seng (HK)",   "unit":"Points", "category":"Equities",      "chart_type":"line","default_on":False},
 ]
 
 # Official FOMC projections (median, from FRED) — shown only in Forecast mode
@@ -271,10 +273,11 @@ def main():
         tag = "futures curve" if curve else "flat (no chain)"
         print(f"  {r['label']:<20} {tag}")
 
-    print("\nFinancial Indicators (FRED)")
+    print("\nFinancial Indicators")
     indicator_results = []
     for item in INDICATORS + PROJECTIONS:
-        r = fetch_fred(item)
+        src = item.get("source", "fred")
+        r = fetch_yahoo(item) if src == "yahoo" else fetch_fred(item)
         if r: indicator_results.append(r)
     if len(indicator_results) < 10 or len(commodity_results) < 8:
         print("\nERROR: Too many downloads failed - keeping old data.")
