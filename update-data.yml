@@ -2,8 +2,8 @@ name: Update Commodity Data
 
 on:
   schedule:
-    - cron: '0 6 * * 1'   # Κάθε Δευτέρα 06:00 UTC
-  workflow_dispatch:        # Χειροκίνητο trigger από GitHub UI
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
 
 jobs:
   fetch-and-commit:
@@ -31,5 +31,5 @@ jobs:
       - name: Commit updated data
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: 'data: weekly update 🤖'
+          commit_message: 'data: weekly update'
           file_pattern: 'data/*.json'
