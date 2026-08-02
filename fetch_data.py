@@ -36,8 +36,8 @@ COMMODITIES = [
     {"source":"yahoo","ticker":"PA=F",  "label":"Palladium",         "unit":"USD/oz",    "category":"Precious Metals","chart_type":"line","default_on":False},
     # Base Metals
     {"source":"yahoo","ticker":"HG=F",  "label":"Copper",            "unit":"USD/lb",    "category":"Base Metals",   "chart_type":"line","default_on":False},
-    {"source":"yahoo","ticker":"ALI=F", "label":"Aluminum",          "unit":"USD/MT",    "category":"Base Metals",   "chart_type":"line","default_on":False},
-    {"source":"fred", "ticker":"PZINCUSDM", "label":"Zinc (LME)",    "unit":"USD/MT",    "category":"Base Metals", "chart_type":"line","default_on":False},
+    {"source":"fred", "ticker":"PALUMUSDM","label":"Aluminum (LME)",   "unit":"USD/MT",    "category":"Base Metals",   "chart_type":"line","default_on":False},
+    {"source":"fred", "ticker":"PZINCUSDM","label":"Zinc (LME)",       "unit":"USD/MT",    "category":"Base Metals",   "chart_type":"line","default_on":False},
     {"source":"fred", "ticker":"PNICKUSDM","label":"Nickel (LME)",   "unit":"USD/MT",    "category":"Base Metals",   "chart_type":"line","default_on":False},
     {"source":"fred", "ticker":"PTINUSDM", "label":"Tin / Solder (LME)","unit":"USD/MT","category":"Base Metals",   "chart_type":"line","default_on":False},
     # Energy
@@ -60,8 +60,8 @@ INDICATORS = [
     # Inflation — BAR
     {"fred_id":"CPIAUCSL",           "label":"US Inflation (CPI YoY)","unit":"%",   "category":"Inflation",     "chart_type":"bar", "default_on":False,"pct_change_yoy":True},
     {"fred_id":"CP0000EZ19M086NEST", "label":"EU Inflation (CPI YoY)","unit":"%",   "category":"Inflation",     "chart_type":"bar", "default_on":False,"pct_change_yoy":True},
-    # PMI
-    {"fred_id":"MANEMP",             "label":"US Manufacturing",   "unit":"Index",  "category":"PMI",           "chart_type":"line","default_on":False},
+    # Industrial Activity
+    {"fred_id":"INDPRO",             "label":"US Industrial Production","unit":"Index (2017=100)","category":"Industrial Activity","chart_type":"line","default_on":False},
     # Equities
     {"fred_id":"SP500",              "label":"S&P 500",            "unit":"Points", "category":"Equities",      "chart_type":"line","default_on":False},
     {"fred_id":"NASDAQCOM",          "label":"NASDAQ Composite",   "unit":"Points", "category":"Equities",      "chart_type":"line","default_on":False},
