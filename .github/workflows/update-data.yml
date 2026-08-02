@@ -24,9 +24,9 @@ jobs:
         run: pip install yfinance pandas requests
 
       - name: Fetch data
-      env:        
-         FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
-        run: python scripts/fetch_data.py
+           env:
+             FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+           run: python scripts/fetch_data.py
 
       - name: Commit updated data
         uses: stefanzweifel/git-auto-commit-action@v5
