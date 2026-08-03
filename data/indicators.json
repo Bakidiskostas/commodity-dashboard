@@ -1,8 +1,8 @@
 {
   "meta": {
-    "fetched_at": "2026-08-02T12:04:37.949210",
-    "start_date": "2016-08-04",
-    "end_date": "2026-08-02"
+    "fetched_at": "2026-08-03T08:53:51.578759",
+    "start_date": "2016-08-05",
+    "end_date": "2026-08-03"
   },
   "series": [
     {
@@ -14,10 +14,6 @@
       "chart_type": "line",
       "default_on": false,
       "data": [
-        {
-          "date": "2016-08-04",
-          "value": 111.9149
-        },
         {
           "date": "2016-08-05",
           "value": 112.3589
@@ -9973,10 +9969,6 @@
       "chart_type": "line",
       "default_on": false,
       "data": [
-        {
-          "date": "2016-08-04",
-          "value": 1.1134
-        },
         {
           "date": "2016-08-05",
           "value": 1.108
@@ -20427,10 +20419,6 @@
       "chart_type": "bar",
       "default_on": true,
       "data": [
-        {
-          "date": "2016-08-04",
-          "value": 0.0
-        },
         {
           "date": "2016-08-05",
           "value": 0.0
@@ -35035,10 +35023,6 @@
       "default_on": false,
       "data": [
         {
-          "date": "2016-08-04",
-          "value": 1.51
-        },
-        {
           "date": "2016-08-05",
           "value": 1.59
         },
@@ -46732,10 +46716,6 @@
       "default_on": false,
       "data": [
         {
-          "date": "2016-08-04",
-          "value": 2164.25
-        },
-        {
           "date": "2016-08-05",
           "value": 2182.87
         },
@@ -56786,10 +56766,6 @@
       "chart_type": "line",
       "default_on": false,
       "data": [
-        {
-          "date": "2016-08-04",
-          "value": 5166.25
-        },
         {
           "date": "2016-08-05",
           "value": 5221.12
@@ -66846,10 +66822,6 @@
       "default_on": false,
       "data": [
         {
-          "date": "2016-08-04",
-          "value": 18352.05
-        },
-        {
           "date": "2016-08-05",
           "value": 18543.53
         },
@@ -76900,10 +76872,6 @@
       "chart_type": "line",
       "default_on": false,
       "data": [
-        {
-          "date": "2016-08-04",
-          "value": 12.42
-        },
         {
           "date": "2016-08-05",
           "value": 11.39
@@ -92284,10 +92252,6 @@
       "chart_type": "line",
       "default_on": false,
       "data": [
-        {
-          "date": "2016-08-04",
-          "value": 21832.2305
-        },
         {
           "date": "2016-08-05",
           "value": 22146.0898
