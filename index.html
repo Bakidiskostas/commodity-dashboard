@@ -16,7 +16,8 @@ header{padding:0 18px;height:clamp(110px,10vw,250px);border-bottom:1px solid var
   background:url('./banner_preview.png') center 54%/cover no-repeat,var(--sur);position:relative}
 .logo{font-size:17px;font-weight:700;color:var(--acc);letter-spacing:-.3px;text-shadow:0 1px 6px rgba(0,0,0,.9);position:relative}
 .logo span{color:#c9d4e0;font-weight:400;font-size:11px;margin-left:6px;text-shadow:0 1px 4px rgba(0,0,0,.9)}
-#lu{margin-left:auto;font-size:10px;color:#c9d4e0;font-family:var(--mono);text-shadow:0 1px 4px rgba(0,0,0,.9);position:relative}
+#lu{position:absolute;top:8px;right:14px;font-size:11px;font-weight:600;color:#ffe9a0;font-family:var(--mono);
+  background:rgba(8,11,17,.72);border:1px solid rgba(224,184,78,.35);border-radius:6px;padding:3px 9px;letter-spacing:.2px;z-index:3}
 .hamburger{display:none;background:transparent;border:1px solid var(--bor);border-radius:var(--r);padding:5px 9px;cursor:pointer;color:var(--mut);font-size:16px;line-height:1;flex-shrink:0}
 
 /* Shell */
@@ -72,6 +73,7 @@ input:checked+.tsl::before{transform:translateX(15px);background:#fff}
 
 /* Single chart container — fills all remaining space */
 .charts{flex:1;min-height:0;display:flex;overflow:hidden;position:relative}
+.foot{flex-shrink:0;font-size:10px;color:var(--mut);padding:5px 14px;border-top:1px solid var(--bor);background:var(--sur);line-height:1.3}
 #plt{flex:1;min-height:0;min-width:0}
 
 /* Draggable divider between the two charts */
@@ -100,7 +102,7 @@ input:checked+.tsl::before{transform:translateX(15px);background:#fff}
 @media(max-width:900px){
   .hamburger{display:block}
   .logo span{display:none}
-  #lu{font-size:9px}
+  #lu{font-size:9px;top:6px;right:8px;padding:2px 7px}
   header{padding:0 12px;height:clamp(80px,14vw,130px)}
   .logo{font-size:14px}
 
@@ -179,6 +181,7 @@ input:checked+.tsl::before{transform:translateX(15px);background:#fff}
       </div>
       <div id="divider"></div>
     </div>
+    <div class="foot">Forecast shows the futures market's forward prices (forward curve) with a statistical uncertainty range — it is not a prediction. Market data: Yahoo Finance, FRED, IMF.</div>
   </main>
 </div>
 
