@@ -292,10 +292,14 @@ function pctRet(d){
   if(!a)return null;
   return (b/a-1)*100;
 }
+function pctSpan(p){
+  const c=p>=0?'#3fb950':'#f85149';
+  return `<span style="color:${c}">${p>=0?'+':''}${p.toFixed(1)}%</span>`;
+}
 function retTag(d){
   const p=pctRet(d);
   if(p===null)return '';
-  return `  ${p>=0?'+':''}${p.toFixed(1)}%`;
+  return `  ${pctSpan(p)}`;
 }
 // Expected % change from the current price to the forecast median end (Forecast mode only)
 function fcastTag(s, raw){
@@ -304,7 +308,7 @@ function fcastTag(s, raw){
   const fut=s.fan.median[s.fan.median.length-1];
   if(!cur || fut==null) return '';
   const p=(fut/cur-1)*100;
-  return `  ▸fcast ${p>=0?'+':''}${p.toFixed(1)}%`;
+  return `  ▸fcast ${pctSpan(p)}`;
 }
 
 function axStyle(){return{gridcolor:'#21262d',linecolor:'#30363d',zerolinecolor:'#30363d',tickcolor:'#30363d',tickfont:{color:'#8b949e',size:10}};}
@@ -360,7 +364,9 @@ function renderAll(){
   }
   // Bar traces → bottom subplot (y2 axis)
   for(const s of bars){
-    const d=filterY(s.data);
+    let d=filterY(s.data);
+    // Projections: stop at Jan 2028 (drop the 2029 bar)
+    if(s.is_projection) d=d.filter(r=>new Date(r.date)<=new Date('2028-06-30'));
     traces.push({
       x:d.map(r=>r.date), y:d.map(r=>r.value),
       name:s.label, type:'bar', opacity:s.is_projection?0.45:0.6,
@@ -402,7 +408,7 @@ function renderAll(){
   if(fcast){
     // Cap the forecast horizon at end of 2028 (don't stretch to 2029)
     const pad=d=>d.toISOString().slice(0,10);
-    layout.xaxis.range=[pad(periodCut()), '2028-12-31'];
+    layout.xaxis.range=[pad(periodCut()), '2028-07-31'];
     const anyCurve=lines.some(s=>s.fan&&s.fan.source==='futures');
     const midTxt=anyCurve
       ?'Dotted line: futures curve (what the market pays today for forward delivery — not a forecast)'
