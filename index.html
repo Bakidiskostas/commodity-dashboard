@@ -267,10 +267,12 @@ function updateSidebarReturns(){
 
 function toggleAll(on){all.forEach(s=>s.active=on);document.querySelectorAll('.si').forEach(el=>el.classList.toggle('off',!on));renderAll();}
 
+function periodCut(){
+  if(activeY==='ytd') return new Date(new Date().getFullYear(),0,1);
+  const c=new Date(); c.setFullYear(c.getFullYear()-activeY); return c;
+}
 function filterY(data){
-  let cut;
-  if(activeY==='ytd'){ cut=new Date(new Date().getFullYear(),0,1); }
-  else { cut=new Date(); cut.setFullYear(cut.getFullYear()-activeY); }
+  const cut=periodCut();
   return data.filter(d=>new Date(d.date)>=cut);
 }
 function normalise(data){if(!data.length)return data;const b=data[0].value;if(!b)return data;return data.map(d=>({...d,value:Math.round(d.value/b*10000)/100}));}
@@ -294,6 +296,15 @@ function retTag(d){
   const p=pctRet(d);
   if(p===null)return '';
   return `  ${p>=0?'+':''}${p.toFixed(1)}%`;
+}
+// Expected % change from the current price to the forecast median end (Forecast mode only)
+function fcastTag(s, raw){
+  if(!fcast || !s.fan || !raw.length) return '';
+  const cur=raw[raw.length-1].value;
+  const fut=s.fan.median[s.fan.median.length-1];
+  if(!cur || fut==null) return '';
+  const p=(fut/cur-1)*100;
+  return `  ▸fcast ${p>=0?'+':''}${p.toFixed(1)}%`;
 }
 
 function axStyle(){return{gridcolor:'#21262d',linecolor:'#30363d',zerolinecolor:'#30363d',tickcolor:'#30363d',tickfont:{color:'#8b949e',size:10}};}
@@ -325,7 +336,7 @@ function renderAll(){
     const d=base?raw.map(r=>({...r,value:nz(r.value)})):raw;
     traces.push({
       x:d.map(r=>r.date), y:d.map(r=>r.value),
-      name:s.label+retTag(raw), type:'scatter', mode:'lines',
+      name:s.label+retTag(raw)+fcastTag(s,raw), type:'scatter', mode:'lines',
       xaxis:'x', yaxis:'y',
       line:{color:s.color,width:1.5},
       hovertemplate:`<b>${s.label}</b><br>%{x}<br>%{y:.2f} ${norm?'(base=100)':s.unit}<extra></extra>`
@@ -389,6 +400,9 @@ function renderAll(){
   };
 
   if(fcast){
+    // Cap the forecast horizon at end of 2028 (don't stretch to 2029)
+    const pad=d=>d.toISOString().slice(0,10);
+    layout.xaxis.range=[pad(periodCut()), '2028-12-31'];
     const anyCurve=lines.some(s=>s.fan&&s.fan.source==='futures');
     const midTxt=anyCurve
       ?'Dotted line: futures curve (what the market pays today for forward delivery — not a forecast)'
