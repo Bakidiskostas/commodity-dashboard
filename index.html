@@ -34,7 +34,10 @@ aside{width:200px;flex-shrink:0;background:var(--sur);border-right:1px solid var
 .sw{width:8px;height:8px;border-radius:2px;flex-shrink:0}
 .sl{font-size:11px;flex:1;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bar-tag{font-size:8px;color:var(--acc2);background:rgba(59,127,212,.15);border:1px solid rgba(59,127,212,.3);padding:0 4px;border-radius:3px;flex-shrink:0}
-.sret{font-size:9px;font-family:var(--mono);flex-shrink:0;margin-left:auto;padding-left:4px}
+.sret{font-size:11px;font-family:var(--mono);flex-shrink:0;margin-left:auto;padding-left:4px;text-align:right;line-height:1.2}
+.sret .sprice{color:#c9d4e0}
+.sret .up{color:#3fb950}
+.sret .dn{color:#f85149}
 .sret.up{color:#3fb950}
 .sret.dn{color:#f85149}
 .si.off .sl{color:var(--mut)}
@@ -149,6 +152,7 @@ input:checked+.tsl::before{transform:translateX(15px);background:#fff}
   <main>
     <div class="ctrl">
       <span class="cl">Period:</span>
+      <button class="rb" data-y="ytd">YTD</button>
       <button class="rb" data-y="1">1Y</button>
       <button class="rb" data-y="2">2Y</button>
       <button class="rb" data-y="5">5Y</button>
@@ -247,20 +251,28 @@ function buildSidebar(){
   updateSidebarReturns();
 }
 
-// % return over the displayed period, next to each series in the sidebar
+// % return + current price over the displayed period, next to each series in the sidebar
 function updateSidebarReturns(){
   for(const s of all){
     if(!s._retEl)continue;
-    const p=pctRet(filterY(s.data));
-    if(p===null){s._retEl.textContent='';continue;}
-    s._retEl.textContent=`${p>=0?'+':''}${p.toFixed(1)}%`;
-    s._retEl.className='sret '+(p>=0?'up':'dn');
+    const d=filterY(s.data);
+    const p=pctRet(d);
+    if(p===null||!d.length){s._retEl.textContent='';continue;}
+    const last=d[d.length-1].value;
+    const price=last>=100?last.toLocaleString('en-US',{maximumFractionDigits:0}):last.toFixed(2);
+    s._retEl.innerHTML=`<span class="sprice">${price}</span> <span class="${p>=0?'up':'dn'}">${p>=0?'+':''}${p.toFixed(1)}%</span>`;
+    s._retEl.className='sret';
   }
 }
 
 function toggleAll(on){all.forEach(s=>s.active=on);document.querySelectorAll('.si').forEach(el=>el.classList.toggle('off',!on));renderAll();}
 
-function filterY(data){const cut=new Date();cut.setFullYear(cut.getFullYear()-activeY);return data.filter(d=>new Date(d.date)>=cut);}
+function filterY(data){
+  let cut;
+  if(activeY==='ytd'){ cut=new Date(new Date().getFullYear(),0,1); }
+  else { cut=new Date(); cut.setFullYear(cut.getFullYear()-activeY); }
+  return data.filter(d=>new Date(d.date)>=cut);
+}
 function normalise(data){if(!data.length)return data;const b=data[0].value;if(!b)return data;return data.map(d=>({...d,value:Math.round(d.value/b*10000)/100}));}
 // A projection shows only if Forecast is on AND its parent series is selected
 function projOn(s){
@@ -359,16 +371,20 @@ function renderAll(){
     hoverlabel:{bgcolor:'#1c2330',bordercolor:'#30363d',font:{size:11}},
     barmode:'overlay',
     showlegend:true,
-    legend:{bgcolor:'#161b22',bordercolor:'#30363d',borderwidth:1,font:{size:10},
+    legend:{bgcolor:'#161b22',bordercolor:'#30363d',borderwidth:1,font:{size:12},
             orientation:'h', x:0, y:1.04, yanchor:'bottom'},
     margin:{t:34, r:16, b:fcast?56:40, l:52},
 
     // Shared X axis (anchored to the bottom-most subplot)
-    xaxis:{...axStyle(), anchor: hasBar?'y2':'y'},
+    xaxis:{...axStyle(), anchor: hasBar?'y2':'y',
+      showspikes:true, spikemode:'across', spikesnap:'cursor',
+      spikecolor:'#8b949e', spikethickness:1, spikedash:'dot'},
 
     // Top subplot — line chart
     yaxis:{...axStyle(),
       domain: hasBar?[0.40,1]:[0,1],
+      showspikes:true, spikemode:'across', spikesnap:'cursor',
+      spikecolor:'#8b949e', spikethickness:1, spikedash:'dot',
       title:{text: norm?'Index (base=100)':'Price', font:{size:10}}},
   };
 
@@ -397,7 +413,7 @@ function renderAll(){
   Plotly.react('plt', traces, layout, CFG);
 }
 
-document.querySelectorAll('.rb').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.rb').forEach(x=>x.classList.remove('active'));b.classList.add('active');activeY=parseInt(b.dataset.y);renderAll();}));
+document.querySelectorAll('.rb').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.rb').forEach(x=>x.classList.remove('active'));b.classList.add('active');activeY=(b.dataset.y==='ytd')?'ytd':parseInt(b.dataset.y);renderAll();}));
 document.getElementById('nt').addEventListener('change',e=>{norm=e.target.checked;renderAll();});
 document.getElementById('fc').addEventListener('change',e=>{fcast=e.target.checked;renderAll();});
 document.querySelectorAll('.bb').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.bb').forEach(x=>x.classList.remove('active'));b.classList.add('active');barCat=b.dataset.bc;renderAll();}));
